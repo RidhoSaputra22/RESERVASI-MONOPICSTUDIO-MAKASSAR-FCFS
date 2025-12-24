@@ -1,0 +1,60 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Support\Str;
+use App\Enums\BookingStatus;
+use App\Traits\HasCodeGenerated;
+use Illuminate\Database\Eloquent\Model;
+
+class Booking extends Model
+{
+    //
+    use HasCodeGenerated;
+
+    protected $fillable = [
+        'customer_id',
+        'package_id',
+        'photographer_id',
+        'studio_id',
+        'scheduled_at',
+        'status',
+        'code',
+    ];
+
+    protected $casts = [
+        'status' => BookingStatus::class,
+    ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($booking) {
+            // Ambil prefix dari nama paket, contoh "Couple" → "COUPLE"
+            $package = Package::find($booking->package_id);
+            $prefix = strtoupper(Str::slug($package->name, ''));
+            $booking->code = self::generateCode($prefix);
+        });
+    }
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
+    public function package()
+    {
+        return $this->belongsTo(Package::class);
+    }
+
+    public function photographer()
+    {
+        return $this->belongsTo(Photographer::class);
+    }
+
+    public function studio()
+    {
+        return $this->belongsTo(Studio::class);
+    }
+}
