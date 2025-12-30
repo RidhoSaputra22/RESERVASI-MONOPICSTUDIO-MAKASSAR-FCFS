@@ -2,27 +2,17 @@
 
 namespace App\Models;
 
-use App\Enums\NotificationType;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Notifications\DatabaseNotification;
 
-class Notification extends Model
+class Notification extends DatabaseNotification
 {
     //
 
-    protected $fillable = [
-        'notifiable_type',
-        'notifiable_id',
-        'type',
-        'message',
-        'is_sent',
-    ];
+    use HasFactory;
 
     protected $casts = [
-        'type' => NotificationType::class,
+        'data' => 'array',
+        'read_at' => 'datetime',
     ];
-
-    public function notifiable()
-    {
-        return $this->morphTo();
-    }
 }

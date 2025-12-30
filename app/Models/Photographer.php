@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
-use App\Enums\PhotographerAvailability;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Notifiable;
 
 class Photographer extends Model
 {
     //
+
+    use HasFactory, Notifiable;
     protected $fillable = [
         'name',
         'email',
@@ -16,6 +19,6 @@ class Photographer extends Model
     ];
 
     protected $casts = [
-        'availability' => PhotographerAvailability::class,
+        'is_available' => 'boolean',
     ];
 }

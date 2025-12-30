@@ -5,12 +5,13 @@ namespace App\Models;
 use Illuminate\Support\Str;
 use App\Enums\BookingStatus;
 use App\Traits\HasCodeGenerated;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Booking extends Model
 {
     //
-    use HasCodeGenerated;
+    use HasFactory, HasCodeGenerated;
 
     protected $fillable = [
         'customer_id',
@@ -18,12 +19,14 @@ class Booking extends Model
         'photographer_id',
         'studio_id',
         'scheduled_at',
+        'snap_token',
         'status',
         'code',
     ];
 
     protected $casts = [
         'status' => BookingStatus::class,
+        'scheduled_at' => 'datetime',
     ];
 
     protected static function boot()
