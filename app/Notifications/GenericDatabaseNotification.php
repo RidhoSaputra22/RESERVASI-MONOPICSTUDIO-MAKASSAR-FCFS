@@ -29,3 +29,4 @@ class GenericDatabaseNotification extends Notification
         ], $this->extra);
     }
 }
+
