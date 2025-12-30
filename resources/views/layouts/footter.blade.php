@@ -1,3 +1,13 @@
+<?php
+
+use Livewire\Volt\Component;
+
+new class extends Component {
+    //
+};
+
+?>
+
 <section class=" bg-primary   px-10 text-white">
     <div class="flex py-10">
         <div class="flex-1">
