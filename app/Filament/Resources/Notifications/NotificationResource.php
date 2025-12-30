@@ -19,7 +19,7 @@ class NotificationResource extends Resource
 {
     protected static ?string $model = Notification::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBell;
 
     protected static string|UnitEnum|null $navigationGroup = 'Notifikasi';
 

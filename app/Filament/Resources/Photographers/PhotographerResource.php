@@ -19,7 +19,7 @@ class PhotographerResource extends Resource
 {
     protected static ?string $model = Photographer::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCamera;
 
     protected static string|UnitEnum|null $navigationGroup = 'Master Data';
 
