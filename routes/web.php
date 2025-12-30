@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\Guest\Welcome;
 use Illuminate\Support\Facades\Route;
+use Livewire\Volt\Volt;
 
-Route::get('/', Welcome::class);
+Volt::route('/', 'guest.welcome');

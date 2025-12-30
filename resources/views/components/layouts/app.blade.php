@@ -1,30 +1,59 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8" />
 
-        <meta name="application-name" content="{{ config('app.name') }}" />
-        <meta name="csrf-token" content="{{ csrf_token() }}" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+<head>
+    <meta charset="utf-8" />
 
-        <title>{{ config('app.name') }}</title>
+    <meta name="application-name" content="{{ config('app.name') }}" />
+    <meta name="csrf-token" content="{{ csrf_token() }}" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-        <style>
-            [x-cloak] {
-                display: none !important;
-            }
-        </style>
+    <title>{{ config('app.name') }}</title>
 
-        @filamentStyles
-        @vite('resources/css/app.css')
-    </head>
+    <style>
+    [x-cloak] {
+        display: none !important;
+    }
+    </style>
 
-    <body class="antialiased">
-        {{ $slot }}
+    {{-- Swiper --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.css" />
 
-        @livewire('notifications')
+    {{-- AOS --}}
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
-        @filamentScripts
-        @vite('resources/js/app.js')
-    </body>
+    <!-- Alpine Core -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Alpine Plugins -->
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+
+
+
+    @filamentStyles
+    @vite('resources/css/app.css')
+</head>
+
+<body class="antialiased">
+    {{ $slot }}
+
+    {{-- Swiper --}}
+    <script src="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.js"></script>
+
+    {{-- AOS --}}
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+    @livewire('notifications')
+
+    @filamentScripts
+    @vite('resources/js/app.js')
+
+
+
+    @stack('scripts')
+    <script>
+    AOS.init();
+    </script>
+</body>
+
 </html>
