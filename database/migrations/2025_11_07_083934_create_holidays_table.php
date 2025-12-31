@@ -19,26 +19,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        DB::table('holidays')->insert([
-            [
-                'date' => '2025-01-01',
-                'description' => 'Tahun Baru Masehi',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'date' => '2025-03-31',
-                'description' => 'Nyepi (Tahun Baru Saka)',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'date' => '2025-06-01',
-                'description' => 'Hari Lahir Pancasila',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ]);
+
     }
 
     /**

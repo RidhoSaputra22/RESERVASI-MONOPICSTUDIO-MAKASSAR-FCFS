@@ -38,26 +38,7 @@ return new class extends Migration
             $table->integer('last_activity')->index();
         });
 
-        DB::table('users')->insert([
-            [
-                'name' => 'Admin User',
-                'email' => 'admin@gmail.com',
-                'email_verified_at' => now(),
-                'password' => bcrypt('admin'),
-                'role' => 'admin',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'User',
-                'email' => 'user@gmail.com',
-                'email_verified_at' => now(),
-                'password' => bcrypt('user'),
-                'role' => 'customer',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]
-        ]);
+
     }
 
     /**

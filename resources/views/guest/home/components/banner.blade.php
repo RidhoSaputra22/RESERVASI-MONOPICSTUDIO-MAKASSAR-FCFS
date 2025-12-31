@@ -13,10 +13,10 @@ new class extends Component {
         <nav class="h-18 my-4 absolute top-0  w-full z-10 font-light">
             <div class="max-w-7xl mx-auto flex h-full bg-white rounded-full items-center pl-9 pr-7 ">
                 <div class="flex-1 flex gap-10">
-                    <a href="">Beranda</a>
-                    <a href="">About Us</a>
-                    <a href="">Price</a>
-                    <a href="">Gallery</a>
+                    <a href="{{ route('welcome') }}">Beranda</a>
+                    <a href="{{ route('about-us') }} ">About Us</a>
+                    <a href=" {{ route('paket') }}">Paket</a>
+                    <a href="{{ route('gallery') }}">Gallery</a>
                 </div>
                 <div class="">
                     <img src="{{ asset('images/logo.png') }}" alt="" class="h-13 ">

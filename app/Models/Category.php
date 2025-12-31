@@ -4,9 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 
-class Package extends Model
+class Category extends Model
 {
     //
 
@@ -15,25 +14,16 @@ class Package extends Model
     protected $fillable = [
         'name',
         'slug',
-        'description',
-        'photo',
-        'price',
-        'duration_minutes',
-        'category_id',
     ];
 
-    protected $casts = [
-        'price' => 'decimal:2',
-        'duration_minutes' => 'integer',
-    ];
 
     protected static function booted(): void
     {
-        static::saving(function (self $package) {
-            if (!$package->slug || $package->isDirty('name')) {
-                $base = Str::slug((string) $package->name);
+        static::saving(function (self $category) {
+            if (!$category->slug || $category->isDirty('name')) {
+                $base = \Illuminate\Support\Str::slug((string) $category->name);
                 if ($base === '') {
-                    $base = 'package';
+                    $base = 'category';
                 }
 
                 $slug = $base;
@@ -41,20 +31,21 @@ class Package extends Model
                 while (
                     static::query()
                         ->where('slug', $slug)
-                        ->when($package->exists, fn ($q) => $q->where('id', '!=', $package->id))
+                        ->when($category->exists, fn ($q) => $q->where('id', '!=', $category->id))
                         ->exists()
                 ) {
                     $slug = $base . '-' . $counter;
                     $counter++;
                 }
 
-                $package->slug = $slug;
+                $category->slug = $slug;
             }
         });
     }
 
-    public function category()
+    public function packages()
     {
-        return $this->belongsTo(Category::class);
+        return $this->hasMany(Package::class);
     }
+
 }

@@ -22,32 +22,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        DB::table('photographers')->insert([
-            [
-                'name' => 'Fauzan',
-                'email' => 'fauzan@me.com',
-                'phone' => '08123456789',
-                'is_available' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'Ridho Saputra',
-                'email' => 'ridho@studio.com',
-                'phone' => '08124567890',
-                'is_available' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'Maya Fitriani',
-                'email' => 'maya@studio.com',
-                'phone' => '08214567891',
-                'is_available' => false,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ]);
+
     }
 
     /**

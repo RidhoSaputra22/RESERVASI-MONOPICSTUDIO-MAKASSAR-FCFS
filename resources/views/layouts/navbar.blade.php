@@ -22,30 +22,33 @@ return request()->routeIs($patterns);
 };
 @endphp
 
-<div class="h-20 flex justify-between py-5 px-12 ">
-    <div class="flex gap-15">
-        <div class="flex items-center gap-2">
+<div class="h-20 flex items-center justify-between py-5 px-12 ">
+    <div class="flex  flex-1">
+        <div class="flex  gap-2">
             <!-- <img src="{{ asset('images/logo.jpg') }}" alt="" class="w-14 aspect-square"> -->
             <div class="">
                 <h1 class="text-xl font-semibold ">Monopic Studio</h1>
             </div>
         </div>
-        <ul class="flex gap-10 items-center">
+    </div>
+    <div class="flex-2 flex justify-center ">
+        <ul class="flex gap-10   ">
             <li>
-                <a href="{{ route('welcome') }}" class=" hover:text-primary {{ $navActive('') }}">Beranda</a>
+                <a href="{{ route('welcome') }}" class="block  hover:text-primary {{ $navActive('') }}">Beranda</a>
             </li>
             <li>
-                <a href="{{ route('produk.cari') }}" class=" hover:text-primary {{ $navActive('produk*') }}">Cari
+                <a href="{{ route('produk.cari') }}" class="block  hover:text-primary {{ $navActive('produk*') }}">Cari
                     Produk</a>
             </li>
             <li>
-                <a href="{{ route('tentang') }}" class=" hover:text-primary {{ $navActive('tentang') }}">Tentang
+                <a href="{{ route('tentang') }}" class="block  hover:text-primary {{ $navActive('tentang') }}">Tentang
                     Kami</a>
             </li>
         </ul>
     </div>
-    <div class="flex">
-        <ul class="flex gap-5 items-center">
+
+    <div class="flex flex-1 justify-end ">
+        <ul class="flex gap-5 ">
             @if (auth()->check())
             <li class="relative ">
                 <a href="{{ route('cart.index') }}" class="block hover:text-primary {{ $navActive('cart*') }}">

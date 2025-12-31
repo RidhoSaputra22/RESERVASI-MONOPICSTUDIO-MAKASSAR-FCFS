@@ -5,6 +5,14 @@ use Livewire\Volt\Volt;
 
 Volt::route('/', 'guest.home.welcome')->name('welcome');
 Volt::route('/booking', 'guest.booking.booking')->name('guest.booking');
+Volt::route('/about-us', 'guest.booking.booking')->name('about-us');
+Volt::route('/gallery', 'guest.booking.booking')->name('gallery');
+
+
+Volt::route('/paket', 'guest.paket.paket')->name('paket');
+
+
+
 
 
 

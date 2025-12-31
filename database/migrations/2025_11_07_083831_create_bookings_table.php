@@ -26,41 +26,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        DB::table('bookings')->insert([
-            [
-                'code' => 'BOOK-' . now()->format('Ymd') . '-001',
-                'customer_id' => 1,
-                'package_id' => 1,
-                'photographer_id' => 1,
-                'studio_id' => 1,
-                'scheduled_at' => Carbon::now()->addDays(1)->setTime(10, 0),
-                'status' => 'confirmed',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'code' => 'BOOK-' . now()->format('Ymd') . '-002',
-                'customer_id' => 2,
-                'package_id' => 2,
-                'photographer_id' => 2,
-                'studio_id' => 2,
-                'scheduled_at' => Carbon::now()->addDays(2)->setTime(14, 0),
-                'status' => 'pending',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'code' => 'BOOK-' . now()->format('Ymd') . '-003',
-                'customer_id' => 3,
-                'package_id' => 3,
-                'photographer_id' => 3,
-                'studio_id' => 3,
-                'scheduled_at' => Carbon::now()->addDays(3)->setTime(9, 30),
-                'status' => 'completed',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ]);
+
     }
 
     /**

@@ -21,35 +21,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        DB::table('packages')->insert([
-            [
 
-                'name' => 'Couple Session',
-                'description' => 'Paket foto untuk pasangan selama 1 jam.',
-                'price' => 500000,
-                'duration_minutes' => 60,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-
-                'name' => 'Family Package',
-                'description' => 'Paket foto keluarga dengan durasi 90 menit.',
-                'price' => 750000,
-                'duration_minutes' => 90,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-
-                'name' => 'Prewedding Session',
-                'description' => 'Paket prewedding lengkap dengan konsep outdoor.',
-                'price' => 1200000,
-                'duration_minutes' => 120,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ]);
     }
 
     /**

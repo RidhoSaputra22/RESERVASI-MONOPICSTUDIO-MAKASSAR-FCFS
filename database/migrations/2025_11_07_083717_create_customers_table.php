@@ -20,29 +20,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        DB::table('customers')->insert([
-            [
-                'name' => 'Andi Pratama',
-                'email' => 'andi@gmail.com',
-                'phone' => '081212345678',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'Siti Rahma',
-                'email' => 'siti@gmail.com',
-                'phone' => '081234567890',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'Budi Santoso',
-                'email' => 'budi@gmail.com',
-                'phone' => '081298765432',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ]);
+
     }
 
     /**
