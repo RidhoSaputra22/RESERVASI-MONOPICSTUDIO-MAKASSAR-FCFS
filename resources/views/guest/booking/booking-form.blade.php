@@ -14,6 +14,13 @@ new class extends Component {
     public $notes = '';
 
 
+    public function bukaModal()
+    {
+        \Log::info("Membuka Modal");
+        $this->dispatch('openModal', 'guest.booking.components.booking-callendar');
+    }
+
+
 
 
     public function with()
@@ -35,32 +42,36 @@ new class extends Component {
         </div>
         <div class="space-y-4">
             @component('components.form.input', [
-                'wireModel' => 'name',
-                'label' => 'Nama Lengkap',
-                'type' => 'text',
-                'required' => true,
+            'wireModel' => 'name',
+            'label' => 'Nama Lengkap',
+            'type' => 'text',
+            'required' => true,
 
-                ])
-
-            @endcomponent
-            @component('components.form.input', [
-                'wireModel' => 'email',
-                'label' => 'Email',
-                'type' => 'email',
-                'required' => true,
-
-                ])
+            ])
 
             @endcomponent
             @component('components.form.input', [
-                'wireModel' => 'phone',
-                'label' => 'Nomor Telepon',
-                'type' => 'text',
-                'required' => true,
+            'wireModel' => 'email',
+            'label' => 'Email',
+            'type' => 'email',
+            'required' => true,
 
-                ])
+            ])
 
             @endcomponent
+            @component('components.form.input', [
+            'wireModel' => 'phone',
+            'label' => 'Nomor Telepon',
+            'type' => 'text',
+            'required' => true,
+
+            ])
+
+            @endcomponent
+        </div>
+        <div>
+            <button wire:click="bukaModal">Buka
+                Modal</button>
         </div>
     </div>
 </div>
