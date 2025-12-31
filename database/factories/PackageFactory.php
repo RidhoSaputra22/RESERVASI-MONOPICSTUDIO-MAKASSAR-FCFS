@@ -25,6 +25,13 @@ class PackageFactory extends Factory
             'Solo',
         ]);
 
+        $photo = [
+            'packages/gallery-1.jpg',
+            'packages/gallery-2.jpg',
+            'packages/gallery-4.jpg',
+            'packages/gallery-5.jpg',
+        ];
+
         $name = $sessionType . ' Session';
         $slug = Str::slug($name) . '-' . fake()->unique()->numberBetween(1, 99999);
 
@@ -33,10 +40,7 @@ class PackageFactory extends Factory
             'name' => $name,
             'slug' => $slug,
             'description' => fake()->optional()->paragraph(),
-            'photo' => fake()->optional()->randomElement([
-                null,
-                'packages/' . fake()->uuid() . '.jpg',
-            ]),
+            'photo' => fake()->optional()->randomElement(array_merge([null], $photo)),
             'price' => fake()->randomFloat(2, 200000, 2000000),
             'duration_minutes' => fake()->randomElement([30, 60, 90, 120]),
         ];

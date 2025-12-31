@@ -10,6 +10,9 @@
 
     <title>{{ config('app.name') }}</title>
 
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+
     <style>
     [x-cloak] {
         display: none !important;
@@ -31,7 +34,7 @@
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
 
 
-    @vite('resources/css/app.css')
+
 </head>
 
 <body class="antialiased">
@@ -46,7 +49,7 @@
     @livewire('notifications')
 
 
-    @vite('resources/js/app.js')
+
 
 
 

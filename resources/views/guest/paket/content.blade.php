@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Package;
+use App\Models\Category;
 use Livewire\Volt\Component;
 use Livewire\WithPagination;
 use Livewire\WithoutUrlPagination;
@@ -11,6 +12,7 @@ new class extends Component {
     use WithPagination, WithoutUrlPagination;
 
     public string $search = '';
+    public ?string $selectedCategorySlug = null;
     public ?string $selectedDuration = null;
     public ?string $selectedHarga = null;
     public ?string $selectedSortBy = null;
@@ -41,10 +43,18 @@ new class extends Component {
     /**
      * Query produk (AMAN & TER-GROUPING)
      */
-    public function getProducts()
+    public function getPackage()
     {
-        $query = Package::query();
+        $query = Package::query()
+            ->with('category');
 
+
+        // Filter Kategori
+        if ($this->selectedCategorySlug) {
+            $query->whereHas('category', function ($q) {
+                $q->where('slug', $this->selectedCategorySlug);
+            });
+        }
 
         // Filter Duration
         if ($this->selectedDuration) {
@@ -69,7 +79,7 @@ new class extends Component {
         if ($this->search) {
             $query->where(function ($q) {
                 $q->where('name', 'like', '%' . $this->search . '%')
-                  ->orWhere('description', 'like', '%' . $this->search . '%');
+                    ->orWhere('description', 'like', '%' . $this->search . '%');
             });
         }
 
@@ -85,9 +95,12 @@ new class extends Component {
             ->get()
             ->pluck('duration_minutes');
 
+        $availableCategory = Category::all();
+
         return [
-            'products'   => $this->getProducts(),
+            'packages'   => $this->getPackage(),
             'durations' => $availableDurations,
+            'categories' => $availableCategory,
         ];
     }
 
@@ -102,6 +115,18 @@ new class extends Component {
 
             <div class="space-y-6">
                 @component('components.form.select', [
+                'label' => 'Kategori',
+                'wireModel' => 'selectedCategorySlug',
+                'default' => [
+                'label' => 'Semua Kategori',
+                'value' => '',
+                ],
+                'options' => $categories->map(fn ($c) => [
+                'label' => $c->name,
+                'value' => $c->slug,
+                ]),
+                ]) @endcomponent
+                @component('components.form.select', [
                 'label' => 'Durasi',
                 'wireModel' => 'selectedDuration',
                 'default' => [
@@ -109,7 +134,7 @@ new class extends Component {
                 'value' => '',
                 ],
                 'options' => $durations->map(fn ($d) => [
-                'label' => $d,
+                'label' => $d . ' menit',
                 'value' => $d,
                 ]),
                 ]) @endcomponent
@@ -139,34 +164,32 @@ new class extends Component {
                 <input type="text" wire:model.live.debounce.500ms="search" class="border rounded px-4 py-2 w-full"
                     placeholder="Masukkan nama produk...">
             </div>
-            {{ $products->links(data: ['scrollTo' => '#paginated-posts']) }}
+            {{ $packages->links(data: ['scrollTo' => '#paginated-posts']) }}
 
             <div class="grid grid-cols-4 gap-10 " wire:loading.class="opacity-60 bg-white animate-pulse">
-                @forelse ($products as $product)
-                <a href="{{ route('produk.detail', ['slug' => $product->slug]) }}" class="">
+                @forelse ($packages as $package)
+                <a href="{{ route('guest.booking', ['slug' => $package->slug]) }}" class="">
                     <div class="relative">
-                        <img src="{{ Storage::url($product->productImages->first->image->image ?? 'products/product_placeholder.jpg') }}"
-                            alt="" class="rounded-xl w-full h-60 object-cover">
+                        <img src="{{ Storage::url($package->photo ?? 'packages/package_placeholder.jpg') }}" alt=""
+                            class="rounded-xl w-full h-60 object-cover">
                         <div
                             class="absolute top-2 left-2 bg-primary px-3 py-1 rounded-md text-sm font-medium text-white">
-                            {{ $product->category->name }}</div>
+                            {{ $package->category->name }}</div>
                     </div>
                     <div class="mt-4 space-y-2">
                         <h1 class="text-xl font-light text-overflow-ellipsis truncate uppercase">
-                            {{ $product->name }}
+                            {{ $package->name }}
                         </h1>
                         <h1 class="text-lg font-semibold mt-2">Rp.
-                            {{ number_format($product->price, 0, ',', ',') }}
+                            {{ number_format($package->price, 0, ',', ',') }}
                         </h1>
                         <div class="flex gap-2 text-primary items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="size-6">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M8.25 21v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21m0 0h4.5V3.545M12.75 21h7.5V10.75M2.25 21h1.5m18 0h-18M2.25 9l4.5-1.636M18.75 3l-1.5.545m0 6.205 3 1m1.5.5-1.5-.5M6.75 7.364V3h-3v18m3-13.636 10.5-3.819" />
-                            </svg>
-                            <p class="truncate text-md/loose w-1/2">Toko
-                                {{ $product->vendor->store_name  ?? 'Nama Toko' }}
-                            </p>
+                            @component('components.icon.clock')
+
+                            @endcomponent
+
+                            <div>{{ $package->duration_minutes }} menit</div>
+
 
                         </div>
                     </div>

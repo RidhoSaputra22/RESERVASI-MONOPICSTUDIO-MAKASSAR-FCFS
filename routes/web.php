@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
 Volt::route('/', 'guest.home.welcome')->name('welcome');
-Volt::route('/booking', 'guest.booking.booking')->name('guest.booking');
+Volt::route('/booking/{slug}', 'guest.booking.booking')->name('guest.booking');
 Volt::route('/about-us', 'guest.booking.booking')->name('about-us');
 Volt::route('/gallery', 'guest.booking.booking')->name('gallery');
 

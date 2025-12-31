@@ -17,4 +17,9 @@ class Customer extends Model
         'email',
         'phone',
     ];
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
 }

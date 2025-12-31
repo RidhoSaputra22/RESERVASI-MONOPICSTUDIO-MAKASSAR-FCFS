@@ -16,20 +16,24 @@
     /* outline: 1px solid red !important; */
 }
 
+
+
 .input-form {
+
     label {
-        @apply font-light;
+        @apply font-light ;
     }
+
     input {
-        @apply w-full px-3 py-2  border border-primary bg-white  focus:shadow-md focus:outline-none;
+        @apply w-full px-3 py-2 mt-2 rounded-md border border-gray-300 bg-white  focus:shadow-md focus:outline-none;
     }
 
     select {
-        @apply w-full px-3 py-2  border border-primary bg-white  focus:shadow-md focus:outline-none;
+        @apply w-full px-3 py-2 py-2 mt-2 rounded-md  border border-gray-300 bg-white  focus:shadow-md focus:outline-none;
     }
 
     textarea {
-        @apply w-full px-3 py-2  border border-primary bg-white  focus:shadow-md focus:outline-none resize-none;
+        @apply w-full px-3 py-2  border border-gray-300 bg-white  focus:shadow-md focus:outline-none resize-none;
     }
 
     button {

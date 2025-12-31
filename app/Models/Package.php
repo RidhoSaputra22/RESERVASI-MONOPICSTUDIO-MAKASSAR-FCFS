@@ -18,12 +18,14 @@ class Package extends Model
         'description',
         'photo',
         'price',
+        'rating',
         'duration_minutes',
         'category_id',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
+        'rating' => 'decimal:2',
         'duration_minutes' => 'integer',
     ];
 
@@ -56,5 +58,10 @@ class Package extends Model
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
     }
 }

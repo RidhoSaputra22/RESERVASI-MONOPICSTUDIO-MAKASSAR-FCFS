@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Models\Package;
 use App\Models\Category;
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -23,6 +24,12 @@ class DatabaseSeeder extends Seeder
             'email' => 'test@example.com',
         ]);
 
-        Category::factory()->count(5)->create();
+        Category::factory()->count(5)
+            ->has(Package::factory()->count(10))
+            ->create();
+
+        $this->call([
+            ReviewSeeder::class,
+        ]);
     }
 }
