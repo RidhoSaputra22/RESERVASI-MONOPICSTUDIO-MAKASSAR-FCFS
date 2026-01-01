@@ -16,8 +16,8 @@ new class extends Component {
 
     public function bukaModal()
     {
-        \Log::info("Membuka Modal");
-        $this->dispatch('openModal', 'guest.booking.components.booking-callendar');
+
+        $this->dispatch('open-modal');
     }
 
 
@@ -70,8 +70,8 @@ new class extends Component {
             @endcomponent
         </div>
         <div>
-            <button wire:click="bukaModal">Buka
-                Modal</button>
+            @livewire('guest.booking.components.booking-callendar', ['package' => $package])
         </div>
     </div>
+
 </div>
