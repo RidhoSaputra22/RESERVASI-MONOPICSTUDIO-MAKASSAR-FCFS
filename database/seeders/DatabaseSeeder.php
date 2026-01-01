@@ -27,9 +27,9 @@ class DatabaseSeeder extends Seeder
 
 
         $this->call([
-            // CategorySeeder::class,
-            // ReviewSeeder::class,
-            BookingSeeder::class,
+            CategorySeeder::class,
+            ReviewSeeder::class,
+            // BookingSeeder::class,
         ]);
     }
 }

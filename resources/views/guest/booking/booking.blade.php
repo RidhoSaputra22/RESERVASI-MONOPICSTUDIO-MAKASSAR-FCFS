@@ -35,8 +35,8 @@ new class extends Component {
         <div class="flex-2 space-y-6">
 
             <div class="relative rounded-2xl overflow-hidden ">
-                <img src="{{ Storage::url($package->image ?? 'packages/package_placeholder.jpg') }}"
-                    class=" w-full object-cover ">
+                <img src="{{ Storage::url($package->photo ?? 'packages/package_placeholder.jpg') }}"
+                    class=" w-full h-screen object-cover ">
                 <span class="absolute inset-0 h-full w-full bg-linear-to-tr from-black to-transparent"></span>
                 <div class="absolute bottom-6 left-6 text-white space-y-5">
                     <div class="space-y-5">

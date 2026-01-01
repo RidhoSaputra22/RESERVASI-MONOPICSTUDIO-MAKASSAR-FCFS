@@ -47,6 +47,16 @@ new class extends Component
         $this->selectedTime = $time;
     }
 
+    public function proceed(): void
+    {
+        $this->dispatch('date-time-selected', [
+            'date' => $this->selectedDate,
+            'time' => $this->selectedTime,
+        ]);
+
+        $this->close();
+    }
+
 
     public function with()
     {
@@ -79,24 +89,32 @@ new class extends Component
 };
 ?>
 
-<div
-    x-data="{
+<div x-data="{
         isOpen: @entangle('isOpen'),
         step: 'calendar',
         selectedDate: null,
         calendar: null,
-    }"
-    x-init="$watch('isOpen', (value) => {
+    }" x-init="$watch('isOpen', (value) => {
         if (value) {
             step = 'calendar';
             selectedDate = null;
         }
-    })"
->
+    })">
     <!-- Trigger -->
-    <button wire:click="open" class="px-4 py-2 bg-primary text-white rounded">
-        Buka Kalender
-    </button>
+    @if($selectedDate && $selectedTime && $isOpen === false)
+        <div
+        wire:loading.class="opacity-50" wire:click="open"
+            class="px-4 py-4 border border-gray-300 border-dashed rounded-md cursor-pointer hover:border-primary hover:bg-gray-50 text-sm font-light">
+
+            Tanggal & Waktu Terpilih: <strong>{{ $selectedDate }} {{ $selectedTime }}</strong>
+        </div>
+    @else
+        <div wire:loading.class="opacity-50" wire:click="open"
+            class="px-4 py-4 border border-gray-300 border-dashed rounded-md cursor-pointer hover:border-primary hover:bg-gray-50 text-sm font-light">
+
+            Klik untuk memilih
+        </div>
+    @endif
 
     <!-- Modal -->
     @component('components.modal', [
@@ -177,14 +195,15 @@ new class extends Component
                 });
             }
         ">
-            <div x-ref="calendar"></div>
+        <div x-ref="calendar"></div>
     </div>
 
 
     {{-- STEP 2: TIME PICKER --}}
     <div wire:loading.class="opacity-50" x-cloak x-show="step === 'time'" class="space-y-4 h-4xl">
         <div>
-            <h1>Pilih Jam Untuk Hari {{ date('d F Y', strtotime($selectedDate)) }}</h1>
+            <h1>Pilih Jam Untuk Hari {{ $selectedDate !== null ? date('d F Y', strtotime($selectedDate)) : 'xx-xx-xx' }}
+            </h1>
         </div>
         <div class="grid grid-cols-4 gap-3">
             @foreach ($availableSlotTime as $slot)
@@ -197,11 +216,12 @@ new class extends Component
         </div>
 
         <div class="flex justify-between mt-6">
-            <button @click="step = 'calendar'; selectedDate = null; $wire.backToCalendar()" class="text-sm text-gray-600">
+            <button @click="step = 'calendar'; selectedDate = null; $wire.backToCalendar()"
+                class="text-sm text-gray-600">
                 ← Kembali
             </button>
 
-            <button class="px-4 py-2 bg-primary text-white rounded">
+            <button wire:click="proceed" class="px-4 py-2 bg-primary text-white rounded">
                 Lanjutkan
             </button>
         </div>

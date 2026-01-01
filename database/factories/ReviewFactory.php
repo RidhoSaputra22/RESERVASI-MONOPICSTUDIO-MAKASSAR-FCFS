@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
-use App\Models\Booking;
-use App\Models\Customer;
-use App\Models\Package;
+use App\Models\User;
 use App\Models\Review;
+use App\Models\Booking;
+use App\Models\Package;
+use App\Models\Customer;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -19,7 +20,7 @@ class ReviewFactory extends Factory
     {
         return [
             'booking_id' => Booking::factory(),
-            'customer_id' => Customer::factory(),
+            'user_id' => User::factory(),
             'package_id' => Package::factory(),
             'rating' => fake()->numberBetween(1, 5),
             'comment' => fake()->boolean(70) ? fake()->sentence() : null,

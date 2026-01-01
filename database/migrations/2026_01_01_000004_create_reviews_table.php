@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('reviews', function (Blueprint $table) {
             $table->id();
             $table->foreignId('booking_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('customer_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('package_id')->constrained()->cascadeOnDelete();
             $table->unsignedTinyInteger('rating');
             $table->text('comment')->nullable();
@@ -22,7 +22,7 @@ return new class extends Migration
 
             $table->unique('booking_id');
             $table->index(['package_id', 'rating']);
-            $table->index(['customer_id', 'created_at']);
+            $table->index(['user_id', 'created_at']);
         });
     }
 

@@ -37,11 +37,11 @@ return request()->routeIs($patterns);
                 <a href="{{ route('welcome') }}" class="block  hover:text-primary {{ $navActive('') }}">Beranda</a>
             </li>
             <li>
-                <a href="{{ route('produk.cari') }}" class="block  hover:text-primary {{ $navActive('produk*') }}">Cari
-                    Produk</a>
+                <a href="{{ route('paket') }}" class="block  hover:text-primary {{ $navActive('paket*') }}">Cari
+                    Paket</a>
             </li>
             <li>
-                <a href="{{ route('tentang') }}" class="block  hover:text-primary {{ $navActive('tentang') }}">Tentang
+                <a href="{{ route('about-us') }}" class="block  hover:text-primary {{ $navActive('about-us') }}">Tentang
                     Kami</a>
             </li>
         </ul>
@@ -50,37 +50,7 @@ return request()->routeIs($patterns);
     <div class="flex flex-1 justify-end ">
         <ul class="flex gap-5 ">
             @if (auth()->check())
-            <li class="relative ">
-                <a href="{{ route('cart.index') }}" class="block hover:text-primary {{ $navActive('cart*') }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="size-6">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
-                    </svg>
 
-                </a>
-                <span
-                    class="absolute -top-2 -right-2.5  text-sm/normal h-5 w-5 bg-primary text-white flex items-center justify-center rounded-full">
-                    {{ $this->cartCount }}
-                </span>
-                <div class="absolute -bottom-12 -right-1.5 w-52" x-data="{ show: false }"
-                    x-on:cart-updated-nav.window="show = true; setTimeout(() => show = false, 2000)" x-cloak
-                    x-show="show" x-transition.duration.500ms>
-                    <div class="relative">
-                        <span
-                            class="absolute -top-3 z-20 right-2 inline-block w-0 h-0 border-solid border-t-0 border-r-[9px] border-l-[9px] border-b-[17.3px] border-l-transparent border-r-transparent border-t-transparent border-b-white">
-                        </span>
-                        <span
-                            class="absolute -top-3 -z-10 right-2  inline-block w-0 h-0 border-solid border-t-0 border-r-[9px] border-l-[9px] border-b-[17.3px] border-l-transparent border-r-transparent border-t-transparent border-b-gray-600">
-                        </span>
-                        <div
-                            class=" text-xs text-center px-3 py-2 bg-white border border-gray-300 rounded-md shadow-md">
-                            Keranjang Bertambah
-                        </div>
-                    </div>
-
-                </div>
-            </li>
             <li class="ml-3">
                 @component('components.dropdown', [
                 'align' => 'right',
@@ -108,10 +78,13 @@ return request()->routeIs($patterns);
                             class="text-sm font-medium block px-4 py-4 hover:bg-gray-100">
                             Lihat Profil
                         </a>
-                        <a href="{{ route('user.logout') }}"
-                            class="text-sm font-medium block px-4 py-4 hover:bg-gray-100">
-                            Logout
-                        </a>
+                        <form method="POST" action="{{ route('user.logout') }}">
+                            @csrf
+                            <button type="submit"
+                                class="text-sm font-medium block w-full text-left px-4 py-4 hover:bg-gray-100">
+                                Logout
+                            </button>
+                        </form>
                     </div>
                 </div>
 

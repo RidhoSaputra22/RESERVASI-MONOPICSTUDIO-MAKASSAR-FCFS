@@ -6,6 +6,7 @@ use App\Notifications\GenericDatabaseNotification;
 use App\Models\Customer;
 use App\Models\Notification;
 use App\Models\Photographer;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -20,8 +21,8 @@ class NotificationFactory extends Factory
     {
         return [
             'id' => (string) Str::uuid(),
-            'notifiable_type' => Customer::class,
-            'notifiable_id' => Customer::factory(),
+            'notifiable_type' => User::class,
+            'notifiable_id' => User::factory(),
             'type' => GenericDatabaseNotification::class,
             'data' => [
                 'kind' => fake()->randomElement(['booking_created', 'reminder', 'schedule_update']),

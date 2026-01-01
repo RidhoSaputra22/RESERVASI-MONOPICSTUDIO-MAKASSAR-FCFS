@@ -22,7 +22,7 @@ new class extends Component {
                     <img src="{{ asset('images/logo.png') }}" alt="" class="h-13 ">
                 </div>
                 <div class="flex-1 flex justify-end gap-10">
-                    <a href="" class="bg-primary text-white px-4 py-3 rounded-full ">Reservasi Sekarang</a>
+                    <a href="{{ route('paket') }}" class="bg-primary text-white px-4 py-3 rounded-full ">Reservasi Sekarang</a>
 
                 </div>
             </div>

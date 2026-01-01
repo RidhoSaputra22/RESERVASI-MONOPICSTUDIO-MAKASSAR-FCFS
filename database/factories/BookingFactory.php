@@ -2,13 +2,14 @@
 
 namespace Database\Factories;
 
-use App\Enums\BookingStatus;
-use App\Models\Booking;
-use App\Models\Customer;
-use App\Models\Package;
-use App\Models\Photographer;
-use App\Models\Studio;
 use Carbon\Carbon;
+use App\Models\User;
+use App\Models\Studio;
+use App\Models\Booking;
+use App\Models\Package;
+use App\Models\Customer;
+use App\Enums\BookingStatus;
+use App\Models\Photographer;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -34,7 +35,7 @@ class BookingFactory extends Factory
 
 
         return [
-            'customer_id' => Customer::factory(),
+            'user_id' => User::factory(),
             'package_id' => $package->id,
             'photographer_id' => fake()->boolean(80) ? Photographer::factory() : null,
             'studio_id' => fake()->boolean(80) ? Studio::factory() : null,
