@@ -14,7 +14,7 @@ Volt::route('/paket', 'guest.paket.paket')->name('paket');
 
 
 
-Volt::route('/user/dashboard', 'guest.booking.booking')->name('user.dashboard');
+Volt::route('/user/dashboard', 'user.dashboard')->name('user.dashboard');
 
 
 Volt::route('/user/login', 'auth.login')->middleware('guest')->name('user.login');

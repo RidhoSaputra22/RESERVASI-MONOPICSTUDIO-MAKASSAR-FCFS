@@ -7,6 +7,10 @@ new class extends Component {
 
     public int $cartCount = 0;
 
+    protected $listeners = [
+        'booking-updated-nav' => '$refresh',
+    ];
+
 };
 
 ?>
@@ -51,7 +55,7 @@ return request()->routeIs($patterns);
         <ul class="flex gap-5 ">
             @if (auth()->check())
 
-            <li class="ml-3">
+            <li class="ml-3 relative">
                 @component('components.dropdown', [
                 'align' => 'right',
                 'width' => 'min-w-sm',
@@ -90,6 +94,24 @@ return request()->routeIs($patterns);
 
                 @endslot
                 @endcomponent
+
+                <div class="absolute -bottom-12 -right-1.5 w-52" x-data="{ show: false }"
+                    x-on:booking-updated-nav.window="show = true; setTimeout(() => show = false, 3000)" x-cloak
+                    x-show="show" x-transition.duration.500ms>
+                    <div class="relative">
+                        <span
+                            class="absolute -top-3 z-20 right-2 inline-block w-0 h-0 border-solid border-t-0 border-r-[9px] border-l-[9px] border-b-[17.3px] border-l-transparent border-r-transparent border-t-transparent border-b-white">
+                        </span>
+                        <span
+                            class="absolute -top-3 -z-10 right-2  inline-block w-0 h-0 border-solid border-t-0 border-r-[9px] border-l-[9px] border-b-[17.3px] border-l-transparent border-r-transparent border-t-transparent border-b-gray-600">
+                        </span>
+                        <div
+                            class=" text-xs text-center px-3 py-2 bg-white border border-gray-300 rounded-md shadow-md">
+                            Lihat Booking Kamu disini
+                        </div>
+                    </div>
+
+                </div>
             </li>
 
 

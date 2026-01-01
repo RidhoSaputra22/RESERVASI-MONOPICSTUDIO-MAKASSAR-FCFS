@@ -32,7 +32,7 @@ new class extends Component {
 
     <div class="flex min-h-screen p-12 gap-10">
 
-        <div class="flex-2 space-y-6">
+        <div class="flex-2 space-y-14">
 
             <div class="relative rounded-2xl overflow-hidden ">
                 <img src="{{ Storage::url($package->photo ?? 'packages/package_placeholder.jpg') }}"
@@ -53,11 +53,16 @@ new class extends Component {
 
                 </div>
             </div>
+            <div class="min-h-screen">
+                @livewire('guest.booking.booking-review', ['package' => $package])
+
+            </div>
 
         </div>
-        <div class="flex-1">
-            @livewire('guest.booking.booking-form', ['package' => $package])
-
+        <div class="flex-1 ">
+            <div class="sticky top-20">
+                @livewire('guest.booking.booking-form', ['package' => $package])
+            </div>
         </div>
 
 

@@ -6,7 +6,6 @@ use App\Models\User;
 use App\Models\Review;
 use App\Models\Booking;
 use App\Models\Package;
-use App\Models\Customer;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

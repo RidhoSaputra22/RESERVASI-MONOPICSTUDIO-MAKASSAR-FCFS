@@ -1,25 +1,36 @@
 <?php
 
-use App\Models\Package;
-use Livewire\Attributes\On;
-use Livewire\Volt\Component;
-use App\Enums\BookingStatus;
-use App\Models\Customer;
-use App\Models\Booking;
-use App\Models\User;
 use Carbon\Carbon;
+use App\Models\User;
+use App\Models\Booking;
+use App\Models\Package;
+use App\Models\Customer;
+use Livewire\Attributes\On;
+use App\Enums\BookingStatus;
+use Livewire\Volt\Component;
 use Illuminate\Support\Facades\Auth;
 
 new class extends Component {
     //
     public Package $package;
 
+    public string $name = '';
+    public string $email = '';
+    public string $phone = '';
 
     public ?string $booking_date = null;
     public ?string $booking_time = null;
-    public ?string $notes = null;
     public string $selectedPaymentMethod = '';
 
+    public function mount(): void
+    {
+        if (auth()->check()) {
+            $user = auth()->user();
+            $this->name = $this->name ?: ($user->name ?? '');
+            $this->email = $this->email ?: ($user->email ?? '');
+            $this->phone = $this->phone ?: ($user->hp ?? '');
+        }
+    }
 
     #[On('date-time-selected')]
     public function setDateTime($data)
@@ -33,6 +44,17 @@ new class extends Component {
         $this->selectedPaymentMethod = $method;
     }
 
+    public function clearData(): void
+    {
+        $this->reset([
+            'booking_date',
+            'booking_time',
+            'selectedPaymentMethod',
+        ]);
+
+        $this->dispatch('reset-booking-calendar');
+    }
+
     public function submitForm(): void
     {
         if (! auth()->check()) {
@@ -42,24 +64,31 @@ new class extends Component {
         }
 
         $this->validate([
-
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'phone' => 'required|string|max:20',
             'booking_date' => 'required|date_format:Y-m-d',
             'booking_time' => 'required|date_format:H:i',
+            'selectedPaymentMethod' => 'required|string',
         ], [
-
+            'name.required' => 'Nama lengkap wajib diisi.',
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'phone.required' => 'Nomor telepon wajib diisi.',
             'booking_date.required' => 'Tanggal reservasi wajib diisi.',
             'booking_time.required' => 'Waktu reservasi wajib diisi.',
+            'selectedPaymentMethod.required' => 'Metode pembayaran wajib dipilih.',
         ]);
 
         try {
             \Illuminate\Support\Facades\DB::transaction(function () {
-                $customer = Auth::user();
+                $user = Auth::user();
 
                 $tz = 'Asia/Makassar';
                 $scheduledAt = Carbon::parse("{$this->booking_date} {$this->booking_time}", $tz);
 
                 Booking::create([
-                    'customer_id' => $customer->id,
+                    'user_id' => $user->id,
                     'package_id' => $this->package->id,
                     'scheduled_at' => $scheduledAt,
                     'status' => BookingStatus::Pending,
@@ -67,12 +96,15 @@ new class extends Component {
             });
 
             session()->flash('success', 'Reservasi berhasil dibuat. Kami akan menghubungi Anda untuk konfirmasi.');
-            $this->reset(['booking_date', 'booking_time', 'notes', 'selectedPaymentMethod']);
+            $this->clearData();
             $this->dispatch('booking-created');
+            $this->dispatch('booking-updated-nav');
         } catch (\Throwable $e) {
             report($e);
-            $this->addError('form', 'Terjadi kesalahan saat menyimpan reservasi. Silakan coba lagi.');
+            $this->addError('form', 'Terjadi kesalahan saat menyimpan reservasi. Silakan coba lagi.' . $e);
         }
+
+
 
 
     }
@@ -95,21 +127,21 @@ new class extends Component {
 <div>
     <div wire:loading.class="opacity-50 cursor-not-allowed" class="space-y-5">
         @if (session()->has('success'))
-            <div class="p-3 border border-gray-200 bg-gray-50 rounded-md text-sm font-light">
-                {{ session('success') }}
-            </div>
+        <div class="p-3 border border-gray-200 bg-gray-50 rounded-md text-sm font-light">
+            {{ session('success') }}
+        </div>
         @endif
 
         @if (session()->has('error'))
-            <div class="p-3 border border-red-200 bg-red-50 rounded-md text-sm font-light text-red-700">
-                {{ session('error') }}
-            </div>
+        <div class="p-3 border border-red-200 bg-red-50 rounded-md text-sm font-light text-red-700">
+            {{ session('error') }}
+        </div>
         @endif
 
         @if ($errors->has('form'))
-            <div class="p-3 border border-red-200 bg-red-50 rounded-md text-sm font-light text-red-700">
-                {{ $errors->first('form') }}
-            </div>
+        <div class="p-3 border border-red-200 bg-red-50 rounded-md text-sm font-light text-red-700">
+            {{ $errors->first('form') }}
+        </div>
         @endif
 
         <div class="space-y-2">
@@ -118,77 +150,83 @@ new class extends Component {
         </div>
 
         @guest
-            <div class="p-3 border border-gray-200 bg-gray-50 rounded-md text-sm font-light">
-                Silakan login terlebih dahulu untuk mengisi formulir reservasi.
-                <a href="{{ route('login') }}" class="underline">Login</a>
-            </div>
+        <div class="p-3 border border-gray-200 bg-gray-50 rounded-md text-sm font-light">
+            Silakan login terlebih dahulu untuk mengisi formulir reservasi.
+            <a href="{{ route('login') }}" class="underline">Login</a>
+        </div>
         @endguest
 
         @auth
-            <div class="space-y-4">
-                @component('components.form.input', [
-                'wireModel' => 'name',
-                'label' => 'Nama Lengkap',
-                'type' => 'text',
-                'required' => true,
-                'disabled' => true,
+        <div class="space-y-4">
+            @component('components.form.input', [
+            'wireModel' => 'name',
+            'label' => 'Nama Lengkap',
+            'type' => 'text',
+            'required' => true,
+            'disabled' => true,
 
-                ])
+            ])
 
-                @endcomponent
-                @component('components.form.input', [
-                'wireModel' => 'email',
-                'label' => 'Email',
-                'type' => 'email',
-                'required' => true,
-                'disabled' => true,
+            @endcomponent
+            @component('components.form.input', [
+            'wireModel' => 'email',
+            'label' => 'Email',
+            'type' => 'email',
+            'required' => true,
+            'disabled' => true,
 
-                ])
+            ])
 
-                @endcomponent
-                @component('components.form.input', [
-                'wireModel' => 'phone',
-                'label' => 'Nomor Telepon',
-                'type' => 'text',
-                'required' => true,
-                'disabled' => true,
+            @endcomponent
+            @component('components.form.input', [
+            'wireModel' => 'phone',
+            'label' => 'Nomor Telepon',
+            'type' => 'text',
+            'required' => true,
+            'disabled' => true,
 
-                ])
+            ])
 
-                @endcomponent
-            </div>
-            <div>
-                <h1 class="font-light pb-2">Pilih Tanggal & Waktu Reservasi</h1>
-                @livewire('guest.booking.components.booking-callendar', ['package' => $package])
-                @if ($errors->has('booking_date') || $errors->has('booking_time'))
-                    <p class="text-sm font-light text-red-500">
-                        Silakan pilih tanggal dan waktu reservasi.
-                    </p>
-                @endif
-            </div>
+            @endcomponent
+        </div>
+        <div>
+            <h1 class="font-light pb-2">Pilih Tanggal & Waktu Reservasi</h1>
+            @livewire('guest.booking.components.booking-callendar', ['package' => $package])
+            @if ($errors->has('booking_date') || $errors->has('booking_time'))
+            <p class="text-sm font-light text-red-500">
+                Silakan pilih tanggal dan waktu reservasi.
+            </p>
+            @endif
+        </div>
 
-            <div class="space-y-4">
-                <h1 class="font-light ">Metode Pembayaran</h1>
+        <div class="space-y-4">
+            <h1 class="font-light ">Metode Pembayaran</h1>
 
-                <div class="flex gap-4">
-                    @foreach($availablePaymentMethods as $method)
-                    <div wire:click="setPaymentMethod('{{ $method['value'] }}')"
-                        class="px-2 py-3 border text-sm font-light border-gray-300 rounded-md cursor-pointer  flex items-center gap-3 {{ $selectedPaymentMethod === $method['value'] ? 'bg-primary text-white' : 'hover:border-primary hover:bg-gray-50' }}">
-                        {{ $method['label'] }}
-                    </div>
-                    @endforeach
+            <div class="flex gap-4">
+                @foreach($availablePaymentMethods as $method)
+                <div wire:click="setPaymentMethod('{{ $method['value'] }}')"
+                    class="px-2 py-3 border text-sm font-light border-gray-300 rounded-md cursor-pointer  flex items-center gap-3 {{ $selectedPaymentMethod === $method['value'] ? 'bg-primary text-white' : 'hover:border-primary hover:bg-gray-50' }}">
+                    {{ $method['label'] }}
                 </div>
+                @endforeach
             </div>
-            <div>
-                @component('components.form.button', [
-                    'label' => 'Submit',
-                    'wireClick' => 'submitForm',
-                    'wireLoadingClass' => 'opacity-50',
-                    'class' => 'w-full py-3 bg-primary text-white rounded-md hover:bg-primary-dark',
-                    ])
+            @error('selectedPaymentMethod')
+            <p class="text-sm font-light text-red-500">
+                {{ $message }}
+            </p>
 
-                @endcomponent
-            </div>
+            @enderror
+        </div>
+        <div>
+            @component('components.form.button', [
+            'label' => 'Submit',
+            'wireClick' => 'submitForm',
+            'wireLoadingClass' => 'opacity-50',
+            'class' => 'w-full py-3 bg-primary text-white rounded-md hover:bg-primary-dark',
+            ])
+
+            @endcomponent
+        </div>
         @endauth
     </div>
 

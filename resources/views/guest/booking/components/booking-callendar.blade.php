@@ -2,6 +2,7 @@
 
 use App\Models\Booking;
 use App\Models\Package;
+use App\Services\ReservationService;
 use Illuminate\Support\Str;
 use Livewire\Volt\Component;
 
@@ -12,6 +13,7 @@ new class extends Component
 
     protected $listeners = [
         'select-date' => 'selectDate',
+        'reset-booking-calendar' => 'resetBookingCalendar',
     ];
 
     public bool $isOpen = false;
@@ -40,6 +42,7 @@ new class extends Component
     {
         $this->step = 'calendar';
         $this->selectedDate = null;
+        $this->selectedTime = null;
     }
 
     public function selectTime(string $time): void
@@ -57,26 +60,31 @@ new class extends Component
         $this->close();
     }
 
+    public function resetBookingCalendar(): void
+    {
+        $this->selectedDate = null;
+        $this->selectedTime = null;
+        $this->step = 'calendar';
+    }
+
 
     public function with()
     {
-        $events = Booking::where('package_id', $this->package->id)
-            ->get()
+        $events = Booking::get()
             ->map(function ($booking) {
                 $start = $booking->scheduled_at;
                 $end = $booking->scheduled_at->copy()->addMinutes($booking->package->duration_minutes);
 
                 return [
-                    'title' => Str::limit($booking->customer->name, 5),
+                    'title' => Str::limit($booking->user->name, 5),
                     'start' => $start->toDateTimeString(),
                     'end' => $end->toDateTimeString(),
                 ];
             })->toArray();
 
-        $availableSlotTime = Booking::getAvailableTimeSlots(
-            packageId: 1,
-            date: now()->format('Y-m-d'),
-            durationMinutes: 30,
+        $availableSlotTime = ReservationService::getAvailableTimeSlots(
+            date: $this->selectedDate ?? now()->format('Y-m-d'),
+            durationMinutes: $this->package->duration_minutes,
         );
 
         // dd($availableSlotTime, $events);
