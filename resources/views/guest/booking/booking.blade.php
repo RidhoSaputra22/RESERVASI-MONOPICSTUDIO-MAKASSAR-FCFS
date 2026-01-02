@@ -25,6 +25,7 @@ new class extends Component {
         if (($result['ok'] ?? false) === true && ($result['message'] ?? '') === 'Payment confirmed') {
             session()->flash('success', 'Pembayaran berhasil! Terima kasih telah melakukan reservasi.');
             $this->dispatch('booking-updated-nav');
+            $this->dispatch('booking-success');
 
         } else {
             session()->flash('error', 'Status pembayaran belum dikonfirmasi. Silakan cek kembali.');
@@ -48,9 +49,11 @@ new class extends Component {
 }; ?>
 
 <div>
+
+
     @livewire('layouts.navbar')
 
-    <div class="flex min-h-screen p-12 gap-10">
+    <div class="flex min-h-screen p-12 gap-10" wire:loading.class="opacity-50 pointer-events-none">
 
         <div class="flex-2 space-y-14">
 

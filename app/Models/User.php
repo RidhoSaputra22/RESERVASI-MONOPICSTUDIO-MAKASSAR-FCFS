@@ -53,7 +53,6 @@ class User extends Authenticatable
 
     public function notifications()
     {
-        return $this->hasMany(Notification::class, 'notifiable_id')
-            ->where('notifiable_type', self::class);
+        return $this->morphMany(Notification::class, 'notifiable')->latest();
     }
 }

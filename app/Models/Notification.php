@@ -11,6 +11,16 @@ class Notification extends DatabaseNotification
 
     use HasFactory;
 
+    protected $fillable = [
+        'id',
+        'type',
+        'notifiable_type',
+        'notifiable_id',
+        'data',
+        'read_at',
+    ];
+
+
     protected $casts = [
         'data' => 'array',
         'read_at' => 'datetime',

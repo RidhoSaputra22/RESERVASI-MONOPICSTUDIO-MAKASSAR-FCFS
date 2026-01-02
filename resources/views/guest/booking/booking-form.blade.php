@@ -51,6 +51,14 @@ new class extends Component {
         $this->dispatch('reset-booking-calendar');
     }
 
+    #[On('booking-success')]
+    public function handleBookingSuccess()
+    {
+        session()->flash('success', 'Reservasi berhasil dibuat!');
+    }
+
+
+
     public function submitForm(): void
     {
         if (! Auth::check()) {
@@ -97,7 +105,6 @@ new class extends Component {
                 $this->dispatch('open-midtrans-snap', snapToken: $result['snap_token']);
             }
 
-            session()->flash('success', 'Reservasi berhasil dibuat. Kami akan menghubungi Anda untuk konfirmasi.');
             $this->clearData();
             $this->dispatch('booking-created');
         } catch (\Throwable $e) {
