@@ -58,6 +58,9 @@ return request()->routeIs($patterns);
     <div class="flex flex-1 justify-end ">
         <ul class="flex gap-5 ">
             @if (auth()->check())
+            <li>
+                @livewire('layouts.components.notification')
+            </li>
 
             <li class="ml-3 relative">
                 @component('components.dropdown', [
