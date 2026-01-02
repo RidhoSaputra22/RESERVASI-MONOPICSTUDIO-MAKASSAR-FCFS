@@ -39,8 +39,9 @@ class PackageFactory extends Factory
             'category_id' => Category::factory(),
             'name' => $name,
             'slug' => $slug,
-            'description' => fake()->optional()->paragraph(),
-            'photo' => fake()->optional()->randomElement(array_merge([null], $photo)),
+            'description' => fake()->paragraph(),
+            // 'photo' => fake()->randomElement(array_merge([null], $photo)),
+            'photo' => fake()->randomElement($photo),
             'price' => fake()->randomFloat(2, 200000, 2000000),
             'duration_minutes' => fake()->randomElement([30, 60, 90, 120]),
         ];

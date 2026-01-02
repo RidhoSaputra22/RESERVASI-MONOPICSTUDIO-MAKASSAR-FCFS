@@ -1,12 +1,3 @@
-<?php
-
-use Livewire\Volt\Component;
-
-new class extends Component {
-    //
-};
-
-?>
 
 <div>
     <section class="relative ">
@@ -16,7 +7,6 @@ new class extends Component {
                     <a href="{{ route('welcome') }}">Beranda</a>
                     <a href="{{ route('about-us') }} ">About Us</a>
                     <a href=" {{ route('paket') }}">Paket</a>
-                    <a href="{{ route('gallery') }}">Gallery</a>
                 </div>
                 <div class="">
                     <img src="{{ asset('images/logo.png') }}" alt="" class="h-13 ">
@@ -31,15 +21,11 @@ new class extends Component {
         <!-- Swiper -->
         <div class="swiper bannerSwiper h-150">
             <div class="swiper-wrapper *:bg-primary">
-                <div class="swiper-slide">Slide 1</div>
-                <div class="swiper-slide">Slide 2</div>
-                <div class="swiper-slide">Slide 3</div>
-                <div class="swiper-slide">Slide 4</div>
-                <div class="swiper-slide">Slide 5</div>
-                <div class="swiper-slide">Slide 6</div>
-                <div class="swiper-slide">Slide 7</div>
-                <div class="swiper-slide">Slide 8</div>
-                <div class="swiper-slide">Slide 9</div>
+                <img class="swiper-slide h-full w-full object-cover object-center" src="{{ asset('images/banner-1.png') }}" alt="" >
+                <img class="swiper-slide h-full w-full object-cover object-center" src="{{ asset('images/banner-paket-2.png') }}" alt="" >
+                <img class="swiper-slide h-full w-full object-cover object-center" src="{{ asset('images/banner-paket-3.png') }}" alt="" >
+
+
             </div>
             <div class="swiper-pagination"></div>
         </div>

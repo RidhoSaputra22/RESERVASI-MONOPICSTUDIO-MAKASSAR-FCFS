@@ -2,13 +2,26 @@
 
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\On;
 use Livewire\Volt\Component;
+use Livewire\WithFileUploads;
 
 new class extends Component {
+    use WithFileUploads;
+
     public string $name = '';
     public string $email = '';
     public string $hp = '';
+
+    public ?string $photo = null;
+    public $photoUpload;
+
+
+    protected $listeners = [
+        'file-uploaded' => '$restart',
+    ];
 
     public function mount(): void
     {
@@ -22,6 +35,70 @@ new class extends Component {
         $this->name = (string) $user->name;
         $this->email = (string) $user->email;
         $this->hp = (string) $user->hp;
+        $this->photo = $user->photo;
+    }
+
+    public function savePhoto(): void
+    {
+        $userId = Auth::id();
+
+        if (!$userId) {
+            $this->redirectRoute('user.login');
+            return;
+        }
+
+        $this->validate([
+            'photoUpload' => ['required', 'image', 'max:2048'],
+        ]);
+
+        $user = User::query()->find($userId);
+
+        if (!$user) {
+            $this->redirectRoute('user.login');
+            return;
+        }
+
+        $path = $this->photoUpload->store('users', 'public');
+
+        if (!empty($user->photo)) {
+            Storage::disk('public')->delete($user->photo);
+        }
+
+        $user->update(['photo' => $path]);
+
+        $this->photo = $path;
+        $this->photoUpload = null;
+
+        session()->flash('success', 'Foto profil berhasil diperbarui.');
+    }
+
+    #[On('file-uploaded')]
+    public function handleUploadedPhoto(string $path): void
+    {
+        $userId = Auth::id();
+
+        if (!$userId) {
+            $this->redirectRoute('user.login');
+            return;
+        }
+
+        $user = User::query()->find($userId);
+
+        if (!$user) {
+            $this->redirectRoute('user.login');
+            return;
+        }
+
+        // Hapus foto lama jika ada
+        if (!empty($user->photo) && $user->photo !== $path) {
+            Storage::disk('public')->delete($user->photo);
+        }
+
+        $user->update(['photo' => $path]);
+        $this->photo = $path;
+
+        // Refresh navbar component that reads auth()->user()->photo
+        $this->dispatch('user-photo-updated');
     }
 
     public function save(): void
@@ -57,6 +134,35 @@ new class extends Component {
             {{ session('success') }}
         </div>
     @endif
+
+    <div class="mb-8 p-4 border rounded-sm" wire:loading.class="opacity-50 pointer-events-none">
+        <div class="flex items-center justify-between gap-6">
+            <div class="flex items-center gap-4">
+                @if (!empty($photo))
+                    <img src="{{ asset('storage/' . $photo) }}" alt="Foto Profil" class="w-16 h-16 rounded-full object-cover border" />
+                @else
+                    <div class="w-16 h-16 rounded-full border bg-gray-50"></div>
+                @endif
+
+                <div>
+                    <div class="font-semibold">Foto Profil</div>
+                    <div class="text-sm text-gray-500">Upload foto untuk akun Anda.</div>
+                </div>
+            </div>
+            @livewire('user.components.upload-photo-modal', [
+                'disk' => 'public',
+                'directory' => 'users',
+                'accept' => 'image/*',
+                'maxSizeKb' => 2048,
+                'imageOnly' => true,
+                'returnEvent' => 'file-uploaded',
+            ])
+        </div>
+
+        @error('photoUpload')
+            <p class="text-red-500 text-sm font-light mt-2">{{ $message }}</p>
+        @enderror
+    </div>
 
     <form wire:submit.prevent="save" class="space-y-5" wire:loading.class="opacity-50 pointer-events-none">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">

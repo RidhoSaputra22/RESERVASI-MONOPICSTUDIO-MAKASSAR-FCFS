@@ -1,12 +1,8 @@
 <?php
 
 use Carbon\Carbon;
-use App\Models\User;
-use App\Models\Booking;
 use App\Models\Package;
-use App\Models\Customer;
 use Livewire\Attributes\On;
-use App\Enums\BookingStatus;
 use Livewire\Volt\Component;
 use Illuminate\Support\Facades\Auth;
 
@@ -24,8 +20,8 @@ new class extends Component {
 
     public function mount(): void
     {
-        if (auth()->check()) {
-            $user = auth()->user();
+        if (Auth::check()) {
+            $user = Auth::user();
             $this->name = $this->name ?: ($user->name ?? '');
             $this->email = $this->email ?: ($user->email ?? '');
             $this->phone = $this->phone ?: ($user->hp ?? '');
@@ -57,7 +53,7 @@ new class extends Component {
 
     public function submitForm(): void
     {
-        if (! auth()->check()) {
+        if (! Auth::check()) {
             session()->flash('error', 'Silakan login terlebih dahulu untuk melakukan reservasi.');
             $this->redirectRoute('login');
             return;
@@ -81,27 +77,32 @@ new class extends Component {
         ]);
 
         try {
-            \Illuminate\Support\Facades\DB::transaction(function () {
-                $user = Auth::user();
+            $user = Auth::user();
 
-                $tz = 'Asia/Makassar';
-                $scheduledAt = Carbon::parse("{$this->booking_date} {$this->booking_time}", $tz);
+            $tz = 'Asia/Makassar';
+            $scheduledAt = Carbon::parse("{$this->booking_date} {$this->booking_time}", $tz);
 
-                Booking::create([
-                    'user_id' => $user->id,
-                    'package_id' => $this->package->id,
-                    'scheduled_at' => $scheduledAt,
-                    'status' => BookingStatus::Pending,
-                ]);
-            });
+            $reservationService = new \App\Services\ReservationService();
+            $result = $reservationService->createReservation([
+                'user_id' => $user->id,
+                'name' => $this->name,
+                'email' => $this->email,
+                'phone' => $this->phone,
+                'package_id' => $this->package->id,
+                'scheduled_at' => $scheduledAt,
+                'payment_method' => $this->selectedPaymentMethod,
+            ]);
+
+            if (is_array($result) && isset($result['snap_token'])) {
+                $this->dispatch('open-midtrans-snap', snapToken: $result['snap_token']);
+            }
 
             session()->flash('success', 'Reservasi berhasil dibuat. Kami akan menghubungi Anda untuk konfirmasi.');
             $this->clearData();
             $this->dispatch('booking-created');
-            $this->dispatch('booking-updated-nav');
         } catch (\Throwable $e) {
             report($e);
-            $this->addError('form', 'Terjadi kesalahan saat menyimpan reservasi. Silakan coba lagi.' . $e);
+            $this->addError('form', 'Terjadi kesalahan saat menyimpan reservasi. Silakan coba lagi.');
         }
 
 
@@ -231,3 +232,66 @@ new class extends Component {
     </div>
 
 </div>
+
+@push('scripts')
+    @once
+        @php
+            $isProduction = (bool) config('services.midtrans.is_production', false);
+            $clientKey = (string) config('services.midtrans.client_key', '');
+            $snapBaseUrl = $isProduction
+                ? 'https://app.midtrans.com/snap/snap.js'
+                : 'https://app.sandbox.midtrans.com/snap/snap.js';
+        @endphp
+
+        @if ($clientKey !== '')
+            <script src="{{ $snapBaseUrl }}" data-client-key="{{ $clientKey }}"></script>
+        @endif
+
+        <script>
+        (function () {
+            function waitForSnap(maxMs) {
+                return new Promise(function (resolve, reject) {
+                    var start = Date.now();
+                    (function tick() {
+                        if (window.snap && typeof window.snap.pay === 'function') {
+                            return resolve();
+                        }
+                        if (Date.now() - start > maxMs) {
+                            return reject(new Error('Midtrans Snap is not available'));
+                        }
+                        setTimeout(tick, 100);
+                    })();
+                });
+            }
+
+            document.addEventListener('open-midtrans-snap', function (event) {
+                var detail = event && event.detail ? event.detail : {};
+                var snapToken = detail.snapToken;
+                if (!snapToken) return;
+
+                waitForSnap(5000)
+                    .then(function () {
+                        window.snap.pay(snapToken, {
+                            onSuccess: function (result) {
+                                Livewire.dispatch('payment-success', { payload: result || {} });
+                            },
+                            onPending: function () {
+                                window.location.reload();
+                            },
+                            onError: function () {
+                                alert('Pembayaran gagal diproses. Silakan coba lagi.');
+                            },
+                            onClose: function () {
+                                // user closed the popup
+                            }
+                        });
+                    })
+                    .catch(function (err) {
+                        console.error(err);
+                        alert('Gagal memuat pembayaran. Silakan refresh halaman dan coba lagi.');
+                    });
+            });
+        })();
+        </script>
+    @endonce
+@endpush

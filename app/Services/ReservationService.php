@@ -16,6 +16,7 @@ use App\Enums\NotificationType;
 use App\Notifications\GenericDatabaseNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 use Midtrans\Config as MidtransConfig;
 use Midtrans\Snap;
 use Carbon\Carbon;
@@ -144,21 +145,43 @@ class ReservationService
             $email = $data['email'] ?? null;
             $phone = (string) ($data['phone'] ?? '');
 
-            $user = $this->resolveOrCreateUser(
-                name: $name,
-                email: is_string($email) ? $email : null,
-                phone: $phone,
-            );
+            $userId = $data['user_id'] ?? null;
+            $user = null;
+
+            if (is_numeric($userId)) {
+                $user = User::query()->find((int) $userId);
+            }
+
+            if (! $user) {
+                $authUser = Auth::user();
+                $user = $authUser instanceof User ? $authUser : null;
+            }
+
+            if (! $user) {
+                $user = $this->resolveOrCreateUser(
+                    name: $name,
+                    email: is_string($email) ? $email : null,
+                    phone: $phone,
+                );
+            }
 
             // Ambil paket
             $package = Package::findOrFail($data['package_id']);
+
+            $scheduledAt = $data['scheduled_at'] ?? null;
+            if (is_string($scheduledAt) && $scheduledAt !== '') {
+                $scheduledAt = Carbon::parse($scheduledAt, 'Asia/Makassar');
+            }
 
             // Buat booking (masih pending)
             $booking = Booking::create([
                 'user_id' => $user->id,
                 'package_id' => $package->id,
+                'scheduled_at' => $scheduledAt instanceof Carbon ? $scheduledAt : null,
                 'status' => BookingStatus::Pending,
             ]);
+
+
 
             // Buat parameter pembayaran Midtrans
             $params = [
@@ -188,14 +211,7 @@ class ReservationService
             // Simpan Snap Token ke booking
             $booking->update(['snap_token' => $snapToken]);
 
-            $user->notify(new GenericDatabaseNotification(
-                message: 'Booking berhasil dibuat. Silakan lakukan pembayaran untuk konfirmasi.',
-                kind: NotificationType::BookingCreated->value,
-                extra: [
-                    'booking_id' => $booking->id,
-                    'code' => $booking->code,
-                ],
-            ));
+            $user->notify();
 
             return [
                 'booking' => $booking,
@@ -209,45 +225,80 @@ class ReservationService
      */
     public function handlePaymentCallback(array $payload)
     {
+        $result = $this->processPaymentResult($payload);
+
+        return response()->json(
+            ['message' => $result['message']],
+            $result['status'],
+        );
+    }
+
+    /**
+     * Proses hasil pembayaran (bisa dipanggil dari Livewire atau callback HTTP)
+     *
+     * @return array{ok: bool, status: int, message: string, booking: ?Booking}
+     */
+    public function processPaymentResult(array $payload): array
+    {
         $orderId = $payload['order_id'] ?? null;
         $transactionStatus = $payload['transaction_status'] ?? null;
 
         if (! is_string($orderId) || $orderId === '') {
-            return response()->json(['message' => 'Invalid order_id'], 400);
+            return [
+                'ok' => false,
+                'status' => 400,
+                'message' => 'Invalid order_id',
+                'booking' => null,
+            ];
         }
 
         $booking = Booking::query()->where('code', $orderId)->first();
 
-        if (!$booking) {
-            return response()->json(['message' => 'Booking not found'], 404);
+        if (! $booking) {
+            return [
+                'ok' => false,
+                'status' => 404,
+                'message' => 'Booking not found',
+                'booking' => null,
+            ];
         }
 
-        if (in_array($transactionStatus, ['capture', 'settlement'])) {
-            // Tandai pembayaran berhasil
+        if (in_array($transactionStatus, ['capture', 'settlement'], true)) {
             $booking->update(['status' => BookingStatus::Confirmed]);
-
-            // Jalankan algoritma FCFS untuk menjadwalkan
             $this->processFCFS($booking);
-        } elseif (in_array($transactionStatus, ['cancel', 'expire', 'deny'])) {
+
+            return [
+                'ok' => true,
+                'status' => 200,
+                'message' => 'Payment confirmed',
+                'booking' => $booking,
+            ];
+        }
+
+        if (in_array($transactionStatus, ['cancel', 'expire', 'deny'], true)) {
             $booking->update(['status' => BookingStatus::Cancelled]);
 
-            if ($booking->relationLoaded('user')) {
-                $booking->user->notify(new GenericDatabaseNotification(
-                    message: 'Pembayaran dibatalkan / kedaluwarsa. Booking Anda dibatalkan.',
-                    kind: NotificationType::Cancelled->value,
-                    extra: ['booking_id' => $booking->id, 'code' => $booking->code],
-                ));
-            } else {
-                $booking->load('user');
-                $booking->user?->notify(new GenericDatabaseNotification(
-                    message: 'Pembayaran dibatalkan / kedaluwarsa. Booking Anda dibatalkan.',
-                    kind: NotificationType::Cancelled->value,
-                    extra: ['booking_id' => $booking->id, 'code' => $booking->code],
-                ));
-            }
+            $booking->loadMissing('user');
+            $booking->user?->notify(new GenericDatabaseNotification(
+                message: 'Pembayaran dibatalkan / kedaluwarsa. Booking Anda dibatalkan.',
+                kind: NotificationType::Cancelled->value,
+                extra: ['booking_id' => $booking->id, 'code' => $booking->code],
+            ));
+
+            return [
+                'ok' => false,
+                'status' => 200,
+                'message' => 'Payment cancelled',
+                'booking' => $booking,
+            ];
         }
 
-        return response()->json(['message' => 'Callback processed']);
+        return [
+            'ok' => true,
+            'status' => 200,
+            'message' => 'Payment pending',
+            'booking' => $booking,
+        ];
     }
 
     /**

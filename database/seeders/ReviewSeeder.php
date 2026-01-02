@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Enums\BookingStatus;
 use App\Models\Booking;
-use App\Models\Customer;
 use App\Models\Package;
 use App\Models\Photographer;
 use App\Models\Review;
@@ -23,7 +22,13 @@ class ReviewSeeder extends Seeder
         Photographer::factory()->count(8)->create();
         Studio::factory()->count(4)->create();
 
-        $packageIds = Package::query()->pluck('id');
+        $packageIds = Package::factory()->count(10)->create()->pluck('id');
+
+        if ($packageIds->isEmpty()) {
+            // Package dibuat via CategorySeeder; kalau belum ada, skip seeder ini agar tidak error.
+            return;
+        }
+
         $photographerIds = Photographer::query()->pluck('id');
         $studioIds = Studio::query()->pluck('id');
 

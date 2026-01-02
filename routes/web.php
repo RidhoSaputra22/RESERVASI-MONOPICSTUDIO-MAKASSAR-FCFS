@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 
 Volt::route('/', 'guest.home.welcome')->name('welcome');
 Volt::route('/booking/{slug}', 'guest.booking.booking')->name('guest.booking');
-Volt::route('/about-us', 'guest.booking.about')->name('about-us');
+Volt::route('/about-us', 'guest.home.about')->name('about-us');
 Volt::route('/gallery', 'guest.booking.gallery')->name('gallery');
 
 

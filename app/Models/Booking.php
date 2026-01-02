@@ -37,7 +37,7 @@ class Booking extends Model
             // Ambil prefix dari nama paket, contoh "Couple" → "COUPLE"
             $package = Package::find($booking->package_id);
             $prefix = strtoupper(Str::slug($package->name, ''));
-            $booking->code = self::generateCode($prefix);
+            $booking->code = $prefix . '-#' . strtoupper(Str::random(8));
         });
     }
 

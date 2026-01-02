@@ -1,12 +1,15 @@
 <?php
 
 use App\Models\Booking;
+use App\Enums\BookingStatus;
 use Livewire\Volt\Component;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\Auth;
 
 new class extends Component {
     use WithPagination;
+
+    public ?string $selectedBookingStatus = null;
 
     public function with(): array
     {
@@ -17,14 +20,22 @@ new class extends Component {
             return [];
         }
 
+        $availableBookingStatus = BookingStatus::asArray();
+
         $bookings = Booking::query()
             ->with(['package', 'photographer', 'studio'])
             ->where('user_id', $userId)
+            ->when($this->selectedBookingStatus && $this->selectedBookingStatus !== 'all', function ($query) {
+                $query->where('status', $this->selectedBookingStatus);
+            })
             ->latest()
             ->paginate(10);
 
+
+
         return [
             'bookings' => $bookings,
+            'availableBookingStatus' => $availableBookingStatus,
         ];
     }
 
@@ -37,7 +48,18 @@ new class extends Component {
             <h2 class="text-xl font-semibold">Riwayat Pesanan</h2>
             <p class="text-sm text-gray-500">Daftar pesanan yang pernah Anda buat.</p>
         </div>
+        <div>
+            @component('components.form.select', [
+                'label' => '',
+                'wireModel' => 'selectedBookingStatus',
+                'options' => $availableBookingStatus,
+                'default' => ['label' => 'Semua Status', 'value' => 'all']
+                ])
+
+            @endcomponent
+        </div>
     </div>
+
 
     <div class="overflow-x-auto" wire:loading.class="opacity-50 pointer-events-none">
         {{ $bookings->links() }}

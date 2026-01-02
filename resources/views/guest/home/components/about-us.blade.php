@@ -1,12 +1,3 @@
-<?php
-
-use Livewire\Volt\Component;
-
-new class extends Component {
-    //
-};
-
-?>
 
 <div>
     <section class="w-full flex h-screen  gap-10 p-24 space-y-14 text-primary">
@@ -27,4 +18,6 @@ new class extends Component {
             <img src="{{ asset('images/team-monopic.png') }}" alt="" srcset="">
         </div>
     </section>
+
+
 </div>

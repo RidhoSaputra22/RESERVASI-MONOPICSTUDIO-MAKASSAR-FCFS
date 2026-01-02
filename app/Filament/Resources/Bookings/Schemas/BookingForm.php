@@ -14,8 +14,8 @@ class BookingForm
     {
         return $schema
             ->components([
-                Select::make('customer_id')
-                    ->relationship('customer', 'name')
+                Select::make('user_id')
+                    ->relationship('user', 'name')
                     ->searchable()
                     ->preload()
                     ->required(),

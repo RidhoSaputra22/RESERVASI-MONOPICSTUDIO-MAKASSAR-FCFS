@@ -1,12 +1,3 @@
-<?php
-
-use Livewire\Volt\Component;
-
-new class extends Component {
-    //
-};
-
-?>
 
 <div>
     <section class="h-screen w-full max-w-7xl mx-auto min-h-screen p-24 space-y-14 text-primary">

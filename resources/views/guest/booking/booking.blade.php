@@ -1,5 +1,6 @@
 <?php
 
+use Livewire\Attributes\On;
 use Livewire\Volt\Component;
 
 new class extends Component {
@@ -11,6 +12,25 @@ new class extends Component {
     public function mount($slug)
     {
         $this->packageSlug = $slug;
+    }
+
+
+    #[On('payment-success')]
+    public function handlePaymentSuccess($payload)
+    {
+        $service = new \App\Services\ReservationService();
+        $result = $service->processPaymentResult(is_array($payload) ? $payload : []);
+        $payload = $payload ?? [];
+
+        if (($result['ok'] ?? false) === true && ($result['message'] ?? '') === 'Payment confirmed') {
+            session()->flash('success', 'Pembayaran berhasil! Terima kasih telah melakukan reservasi.');
+            $this->dispatch('booking-updated-nav');
+
+        } else {
+            session()->flash('error', 'Status pembayaran belum dikonfirmasi. Silakan cek kembali.');
+        }
+
+
     }
 
 

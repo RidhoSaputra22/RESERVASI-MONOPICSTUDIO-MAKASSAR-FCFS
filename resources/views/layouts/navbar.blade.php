@@ -1,16 +1,20 @@
 <?php
 
 use Livewire\Volt\Component;
+use Livewire\Attributes\On;
 
 new class extends Component {
-    //
+    #[On('booking-updated-nav')]
+    public function refreshBookingHint(): void
+    {
+        // no-op; triggers re-render
+    }
 
-    public int $cartCount = 0;
-
-    protected $listeners = [
-        'booking-updated-nav' => '$refresh',
-    ];
-
+    #[On('user-photo-updated')]
+    public function refreshUserPhoto(): void
+    {
+        // no-op; triggers re-render
+    }
 };
 
 ?>
@@ -69,11 +73,18 @@ return request()->routeIs($patterns);
                 <div>
                     <div class="border-b border-gray-400">
                         <div class="flex gap-3 items-center mb-3  mx-4 my-3">
-                            <img src="{{ Storage::url(auth()->user()->foto ?? 'user-placeholder.png') }}" alt=""
-                                class="size-13 aspect-square object-cover rounded-full ">
+                            @php
+                                $navUser = auth()->user()?->fresh();
+                            @endphp
+                            @if (!empty($navUser?->photo))
+                                <img src="{{ asset('storage/' . $navUser->photo) }}" alt="Foto Profil"
+                                    class="size-13 aspect-square object-cover rounded-full ">
+                            @else
+                                <div class="size-13 aspect-square rounded-full border bg-gray-50"></div>
+                            @endif
                             <div>
-                                <h1 class="text-lg/tight font-semibold">{{ auth()->user()->name }}</h1>
-                                <span class="text-sm/tight font-light text-gray-500">{{ auth()->user()->email }}</span>
+                                <h1 class="text-lg/tight font-semibold">{{ $navUser?->name ?? '' }}</h1>
+                                <span class="text-sm/tight font-light text-gray-500">{{ $navUser?->email ?? '' }}</span>
                             </div>
                         </div>
                     </div>
@@ -81,6 +92,10 @@ return request()->routeIs($patterns);
                         <a href="{{ route('user.dashboard') }}"
                             class="text-sm font-medium block px-4 py-4 hover:bg-gray-100">
                             Lihat Profil
+                        </a>
+                        <a href="{{ route('user.dashboard', ['tab' => 'history']) }}"
+                            class="text-sm font-medium block px-4 py-4 hover:bg-gray-100">
+                            Lihat History Booking
                         </a>
                         <form method="POST" action="{{ route('user.logout') }}">
                             @csrf

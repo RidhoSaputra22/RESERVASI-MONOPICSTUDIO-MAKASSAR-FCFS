@@ -1,12 +1,3 @@
-<?php
-
-use Livewire\Volt\Component;
-
-new class extends Component {
-    //
-};
-
-?>
 
 <div>
     <section class="w-full  flex gap-10 p-24">

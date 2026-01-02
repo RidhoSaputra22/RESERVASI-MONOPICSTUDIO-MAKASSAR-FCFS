@@ -16,7 +16,7 @@ class BookingsTable
             ->columns([
                 TextColumn::make('code')
                     ->searchable(),
-                TextColumn::make('customer.name')
+                TextColumn::make('user.name')
                     ->label('Customer')
                     ->searchable(),
                 TextColumn::make('package.name')
