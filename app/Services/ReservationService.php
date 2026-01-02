@@ -211,7 +211,14 @@ class ReservationService
             // Simpan Snap Token ke booking
             $booking->update(['snap_token' => $snapToken]);
 
-            $user->notify();
+            $user->notify(new GenericDatabaseNotification(
+                message: 'Booking berhasil dibuat. Silakan lakukan pembayaran untuk konfirmasi.',
+                kind: NotificationType::BookingCreated->value,
+                extra: [
+                    'booking_id' => $booking->id,
+                    'code' => $booking->code,
+                ],
+            ));
 
             return [
                 'booking' => $booking,

@@ -24,6 +24,7 @@ new class extends Component {
 
     {{-- Content --}}
     @include('guest.home.components.banner')
+    @livewire('guest.home.components.services-1')
     @include('guest.home.components.tagline-1')
     @include('guest.home.components.tagline-2')
     @include('guest.home.components.about-us')
