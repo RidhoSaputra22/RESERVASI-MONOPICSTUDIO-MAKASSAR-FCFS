@@ -42,7 +42,7 @@ class PackageFactory extends Factory
             'description' => fake()->paragraph(),
             // 'photo' => fake()->randomElement(array_merge([null], $photo)),
             'photo' => fake()->randomElement($photo),
-            'price' => fake()->randomFloat(2, 200000, 2000000),
+            'price' => 200000,
             'duration_minutes' => fake()->randomElement([30, 60, 90, 120]),
         ];
     }
