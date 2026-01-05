@@ -83,8 +83,8 @@ new class extends Component
             })->toArray();
 
         $availableSlotTime = ReservationService::getAvailableTimeSlots(
-            // date: $this->selectedDate ?? now()->format('Y-m-d'),
-            date: '2026-01-01',
+            date: $this->selectedDate ?? now()->format('Y-m-d'),
+            // date: '2026-01-01',
             durationMinutes: $this->package->duration_minutes,
         );
 
