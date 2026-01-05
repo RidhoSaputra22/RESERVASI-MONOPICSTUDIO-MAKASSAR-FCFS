@@ -14,6 +14,13 @@ class Category extends Model
     protected $fillable = [
         'name',
         'slug',
+        'keterangan',
+    ];
+
+    protected $casts = [
+        'keterangan' => 'array',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
 

@@ -1,4 +1,3 @@
-
 <div>
     <section class="bg-primary ">
         <div class="w-full max-w-7xl mx-auto min-h-screen p-24 space-y-14 text-white">
@@ -13,35 +12,55 @@
             </div>
             <div class="py-14 ">
                 @foreach ($paket as $key => $item)
-                    <a href="{{ route('guest.booking', $item->slug) }}"
-                        class="block will-change-transform transform transition-transform duration-300 ease-in-out hover:scale-105">
+                <a href="{{ route('guest.booking', $item->slug) }}"
+                    class="block will-change-transform transform transition-transform duration-300 ease-in-out hover:scale-105">
 
-                        <div class="h-screen flex {{ ($key + 1) % 2 == 0 ? 'flex-row-reverse' : '' }} gap-10 pb-24 cursor-pointer "
-                            data-aos="fade-up">
-                            <div class="flex-1 h-full">
-                                <img src="{{ Storage::url($item->photo ?? 'packages/package_placeholder.jpg') }}" alt=""
-                                    class="h-full object-cover">
+                    <div class="h-screen flex {{ ($key + 1) % 2 == 0 ? 'flex-row-reverse' : '' }} gap-10 pb-24 cursor-pointer "
+                        data-aos="fade-up">
+                        <div class="flex-1 h-full">
+                            <img src="{{ Storage::url($item->photo ?? 'packages/package_placeholder.jpg') }}" alt=""
+                                class="h-full object-cover">
+                        </div>
+                        <div class="flex-1 overflow-hidden space-y-5">
+                            <h1 class="text-5xl/relaxed font-semibold uppercase">
+                                {{ $item->name }}</h1>
+                            <h1 class="text-5xl/relaxed font-semibold ">Rp. {{ number_format($item->price) }}</h1>
+                            <p class="text-xl/relaxed font-light text-justify">
+                                {{ $item->description }}
+                            </p>
+                            <div class="space-y-5 text-xl/relaxed font-light text-justify">
+                                <div class=" flex  items-center gap-5">
+                                    @component('components.icon.clock')
+
+                                    @endcomponent
+                                    <p class="text-md/tight">{{ $item->duration_minutes }} Menit</p>
+                                </div>
                             </div>
-                            <div class="flex-1 overflow-hidden space-y-5">
-                                <h1 class="text-5xl/relaxed font-semibold uppercase">
-                                    {{ $item->name }}</h1>
-                                <h1 class="text-5xl/relaxed font-semibold ">Rp. {{ number_format($item->price) }}</h1>
-                                <p class="text-xl/relaxed font-light text-justify">
-                                    {{ $item->description }}
-                                </p>
-                                <div class="space-y-5 text-xl/relaxed font-light text-justify">
-                                      <div class=" flex  items-center gap-5">
-                                            @component('components.icon.clock')
+                            @if (! empty($item->fasilitas))
+                            <div class="space-y-2  ">
+                                <h2 class="text-lg font-semibold">Fasilitas</h2>
+                                <div class="pl-5 [&_ul]:list-disc [&_ol]:list-decimal [&_li]:list-item space-y-4">
 
-                                            @endcomponent
-                                            <p class="text-md/tight">{{ $item->duration_minutes }} Menit</p>
-                                        </div>
+                                    {{ \Filament\Forms\Components\RichEditor\RichContentRenderer::make($item->fasilitas)}}
                                 </div>
 
+                            </div>
+                            @endif
+                            @if (! empty($item->category->keterangan))
+                            <div class="space-y-2  ">
+                                <h2 class="text-lg font-semibold">Keterangan</h2>
+                                <div class="pl-5 [&_ul]:list-disc [&_ol]:list-decimal [&_li]:list-item space-y-4">
+
+                                    {{ \Filament\Forms\Components\RichEditor\RichContentRenderer::make($item->category->keterangan)}}
+                                </div>
 
                             </div>
+                            @endif
+
+
                         </div>
-                    </a>
+                    </div>
+                </a>
                 @endforeach
             </div>
         </div>

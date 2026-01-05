@@ -83,7 +83,8 @@ new class extends Component
             })->toArray();
 
         $availableSlotTime = ReservationService::getAvailableTimeSlots(
-            date: $this->selectedDate ?? now()->format('Y-m-d'),
+            // date: $this->selectedDate ?? now()->format('Y-m-d'),
+            date: '2026-01-01',
             durationMinutes: $this->package->duration_minutes,
         );
 
@@ -141,6 +142,7 @@ new class extends Component
                 initialView: 'dayGridMonth',
                 height: 520,
 
+
                 firstDay: 1, // Senin
                 dayMaxEvents: true,
 
@@ -156,7 +158,7 @@ new class extends Component
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                    right: 'dayGridMonth'
                 },
 
                 buttonText: {

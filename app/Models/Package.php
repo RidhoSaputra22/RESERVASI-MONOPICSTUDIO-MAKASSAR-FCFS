@@ -16,6 +16,7 @@ class Package extends Model
         'name',
         'slug',
         'description',
+        'fasilitas',
         'photo',
         'price',
         'rating',
@@ -27,6 +28,7 @@ class Package extends Model
         'price' => 'decimal:2',
         'rating' => 'decimal:2',
         'duration_minutes' => 'integer',
+        'fasilitas' => 'array',
     ];
 
     protected static function booted(): void

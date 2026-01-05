@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Filament\Resources\Holidays\Pages;
+namespace App\Filament\Resources\Categories\Pages;
 
-use App\Filament\Resources\Holidays\HolidayResource;
+use App\Filament\Resources\Categories\CategoryResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
-class ListHolidays extends ListRecords
+class ListCategories extends ListRecords
 {
-    protected static string $resource = HolidayResource::class;
+    protected static string $resource = CategoryResource::class;
 
     protected function getHeaderActions(): array
     {

@@ -15,12 +15,18 @@ class PackagesTable
         return $table
             ->columns([
                 TextColumn::make('name')
+                    ->label('Nama Paket')
                     ->searchable(),
                 TextColumn::make('price')
+                    ->money('IDR')
+                    ->label('Harga')
                     ->sortable(),
                 TextColumn::make('duration_minutes')
-                    ->label('Duration (minutes)')
+                    ->label('Durasi (Menit)')
                     ->sortable(),
+                TextColumn::make('category.name')
+                    ->label('Kategori')
+                    ->searchable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

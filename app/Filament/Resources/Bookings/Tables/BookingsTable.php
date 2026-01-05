@@ -15,20 +15,22 @@ class BookingsTable
         return $table
             ->columns([
                 TextColumn::make('code')
+                    ->label('Kode Booking')
                     ->searchable(),
                 TextColumn::make('user.name')
                     ->label('Customer')
                     ->searchable(),
                 TextColumn::make('package.name')
-                    ->label('Package')
+                    ->label('Paket')
                     ->searchable(),
                 TextColumn::make('photographer.name')
-                    ->label('Photographer')
+                    ->label('Fotografer')
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('studio.name')
                     ->label('Studio')
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('scheduled_at')
+                    ->label('Jadwal Pemotretan')
                     ->dateTime()
                     ->sortable(),
                 TextColumn::make('status')

@@ -21,6 +21,7 @@ use Midtrans\Config as MidtransConfig;
 use Midtrans\Snap;
 use Carbon\Carbon;
 
+use App\Jobs\SendWhatsAppBookingNotification;
 use App\Services\WhatsAppServices;
 use Illuminate\Support\Facades\Log;
 
@@ -369,17 +370,8 @@ class ReservationService
             extra: ['booking_id' => $booking->id, 'code' => $booking->code],
         ));
 
-        // Send WhatsApp notification
-        try {
-            WhatsAppServices::sendMessage(
-                userEmail: $booking->user->email,
-                bookingCode: $booking->code,
-                paketSlug: $booking->package->slug,
-            );
-        } catch (\Exception $e) {
-            // Log the error but do not fail the process
-            Log::error('Failed to send WhatsApp message: ' . $e->getMessage());
-        }
+        // Send WhatsApp notification (queued)
+        SendWhatsAppBookingNotification::dispatch($booking->id);
     }
 
     private function resolveOrCreateUser(string $name, ?string $email, string $phone): User

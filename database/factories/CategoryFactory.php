@@ -21,6 +21,7 @@ class CategoryFactory extends Factory
         return [
             'name' => $name,
             'slug' => $slug,
+            'keterangan' => 'ked',
         ];
     }
 }

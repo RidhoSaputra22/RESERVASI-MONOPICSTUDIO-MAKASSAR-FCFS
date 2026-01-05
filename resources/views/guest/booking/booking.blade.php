@@ -66,6 +66,7 @@ new class extends Component {
                         <h1 class="text-5xl font-semibold">{{ $package->name }}</h1>
                         <h1 class="text-4xl font-semibold"> Rp. {{ number_format($package->price, 0, ',', ',') }}</h1>
                         <p class="text-lg">{{ $package->description }}</p>
+
                     </div>
                     <div class="flex items-center gap-2">
                         @component('components.icon.clock')
@@ -73,9 +74,31 @@ new class extends Component {
                         @endcomponent
                         <p class="text-md font-light">{{ $package->duration_minutes }} menit</p>
                     </div>
+                    <div>
+                        @if (! empty($package->fasilitas))
+                        <div class="space-y-2  ">
+                            <h2 class="text-lg font-semibold">Fasilitas</h2>
+                            <div class="pl-5 [&_ul]:list-disc [&_ol]:list-decimal [&_li]:list-item">
+
+                                {{ \Filament\Forms\Components\RichEditor\RichContentRenderer::make($package->fasilitas)}}
+                            </div>
+
+                        </div>
+                        @endif
+                    </div>
 
                 </div>
             </div>
+            @if (! empty($package->category->keterangan))
+            <div class="space-y-2  ">
+                <h2 class="text-lg font-semibold">Keterangan</h2>
+                <div class="pl-5 [&_ul]:list-disc [&_ol]:list-decimal [&_li]:list-item">
+
+                    {{ \Filament\Forms\Components\RichEditor\RichContentRenderer::make($package->category->keterangan)}}
+                </div>
+
+            </div>
+            @endif
             <div class="min-h-screen">
                 @livewire('guest.booking.booking-review', ['package' => $package])
 

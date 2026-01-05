@@ -40,6 +40,11 @@ class PackageFactory extends Factory
             'name' => $name,
             'slug' => $slug,
             'description' => fake()->paragraph(),
+            'fasilitas' => collect([
+                'Free cetak foto',
+                'Makeup basic',
+                'Akses semua properti',
+            ])->shuffle()->take(fake()->numberBetween(1, 3))->implode("\n"),
             // 'photo' => fake()->randomElement(array_merge([null], $photo)),
             'photo' => fake()->randomElement($photo),
             'price' => 200000,
