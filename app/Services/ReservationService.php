@@ -41,6 +41,7 @@ class ReservationService
         int $durationMinutes,
         ?int $studioId = null,
         ?int $photographerId = null,
+        ?int $excludeBookingId = null,
     ): array {
         if (empty($date)) {
             return [];
@@ -75,6 +76,7 @@ class ReservationService
             ->whereDate('scheduled_at', $date)
             ->whereNotNull('scheduled_at')
             ->where('status', '!=', BookingStatus::Cancelled->value)
+            ->when($excludeBookingId !== null, fn ($q) => $q->where('id', '!=', $excludeBookingId))
             ->when($studioId !== null, fn ($q) => $q->where('studio_id', $studioId))
             ->when($photographerId !== null, fn ($q) => $q->where('photographer_id', $photographerId))
             ->with('package');
@@ -137,6 +139,170 @@ class ReservationService
             })
             ->values()
             ->toArray();
+    }
+
+    /**
+     * Batalkan booking milik user tertentu.
+     *
+     * @return array{ok: bool, status: int, message: string, booking: ?Booking}
+     */
+    public function cancelBookingByUser(int $bookingId, int $userId, ?string $reason = null): array
+    {
+        $booking = Booking::query()->with(['user', 'photographer', 'studio'])->find($bookingId);
+
+        if (! $booking) {
+            return ['ok' => false, 'status' => 404, 'message' => 'Booking not found', 'booking' => null];
+        }
+
+        if ((int) $booking->user_id !== (int) $userId) {
+            return ['ok' => false, 'status' => 403, 'message' => 'Forbidden', 'booking' => null];
+        }
+
+        if ($booking->status === BookingStatus::Cancelled) {
+            return ['ok' => true, 'status' => 200, 'message' => 'Booking already cancelled', 'booking' => $booking];
+        }
+
+        if ($booking->status === BookingStatus::Completed) {
+            return ['ok' => false, 'status' => 422, 'message' => 'Booking sudah selesai dan tidak bisa dibatalkan', 'booking' => $booking];
+        }
+
+        return DB::transaction(function () use ($booking, $reason) {
+            $booking->update(['status' => BookingStatus::Cancelled]);
+
+            $extra = [
+                'booking_id' => $booking->id,
+                'code' => $booking->code,
+            ];
+            if (is_string($reason) && $reason !== '') {
+                $extra['reason'] = $reason;
+            }
+
+            $booking->user?->notify(new GenericDatabaseNotification(
+                message: 'Booking Anda berhasil dibatalkan.' . (is_string($reason) && $reason !== '' ? " Alasan: {$reason}." : ''),
+                kind: NotificationType::Cancelled->value,
+                extra: $extra,
+            ));
+
+            if ($booking->photographer) {
+                $booking->photographer->notify(new GenericDatabaseNotification(
+                    message: "Booking {$booking->code} dibatalkan oleh customer.",
+                    kind: NotificationType::Cancelled->value,
+                    extra: $extra,
+                ));
+            }
+
+            return ['ok' => true, 'status' => 200, 'message' => 'Booking cancelled', 'booking' => $booking];
+        });
+    }
+
+    /**
+     * Jadwal ulang booking milik user tertentu.
+     *
+     * @return array{ok: bool, status: int, message: string, booking: ?Booking}
+     */
+    public function rescheduleBookingByUser(int $bookingId, int $userId, string $newScheduledAt): array
+    {
+        $tz = 'Asia/Makassar';
+
+        $booking = Booking::query()->with(['package', 'user', 'photographer', 'studio'])->find($bookingId);
+
+        if (! $booking) {
+            return ['ok' => false, 'status' => 404, 'message' => 'Booking not found', 'booking' => null];
+        }
+
+        if ((int) $booking->user_id !== (int) $userId) {
+            return ['ok' => false, 'status' => 403, 'message' => 'Forbidden', 'booking' => null];
+        }
+
+        if ($booking->status === BookingStatus::Cancelled) {
+            return ['ok' => false, 'status' => 422, 'message' => 'Booking sudah dibatalkan', 'booking' => $booking];
+        }
+
+        if ($booking->status === BookingStatus::Completed) {
+            return ['ok' => false, 'status' => 422, 'message' => 'Booking sudah selesai dan tidak bisa dijadwal ulang', 'booking' => $booking];
+        }
+
+        try {
+            $target = Carbon::parse($newScheduledAt, $tz);
+        } catch (\Throwable) {
+            return ['ok' => false, 'status' => 422, 'message' => 'Format jadwal tidak valid', 'booking' => $booking];
+        }
+
+        if (Holiday::query()->whereDate('date', $target->toDateString())->exists()) {
+            return ['ok' => false, 'status' => 422, 'message' => 'Tanggal yang dipilih libur', 'booking' => $booking];
+        }
+
+        $durationMinutes = (int) ($booking->package?->duration_minutes ?? 60);
+
+        // Validasi jam harus termasuk sesi foto yang tersedia
+        $slotTimes = SesiFoto::query()
+            ->orderBy('session_time')
+            ->pluck('session_time')
+            ->map(fn ($time) => Carbon::createFromTimeString((string) $time)->format('H:i'))
+            ->toArray();
+
+        if ($slotTimes === []) {
+            return ['ok' => false, 'status' => 422, 'message' => 'Sesi foto belum dikonfigurasi', 'booking' => $booking];
+        }
+
+        if (! in_array($target->format('H:i'), $slotTimes, true)) {
+            return ['ok' => false, 'status' => 422, 'message' => 'Jam yang dipilih tidak tersedia', 'booking' => $booking];
+        }
+
+        // Jika booking sudah confirmed, pastikan ada assignment photographer & studio yang tersedia
+        $assignment = null;
+        if ($booking->status === BookingStatus::Confirmed) {
+            $assignment = $this->findAvailableAssignment($target, $durationMinutes, $booking->id);
+            if (! $assignment) {
+                return ['ok' => false, 'status' => 422, 'message' => 'Slot tidak tersedia untuk jadwal tersebut', 'booking' => $booking];
+            }
+        }
+
+        return DB::transaction(function () use ($booking, $target, $assignment, $tz) {
+            $oldPhotographerId = $booking->photographer_id ? (int) $booking->photographer_id : null;
+
+            $update = [
+                'scheduled_at' => $target->copy()->setTimezone($tz),
+            ];
+
+            if ($assignment) {
+                $update['photographer_id'] = $assignment['photographer_id'];
+                $update['studio_id'] = $assignment['studio_id'];
+            } else {
+                // Pending booking: jadwal berubah, assignment dibiarkan apa adanya (biasanya null)
+            }
+
+            $booking->update($update);
+
+            $formatted = $target->copy()->setTimezone($tz)->format('d-m-Y H:i');
+            $extra = ['booking_id' => $booking->id, 'code' => $booking->code];
+
+            $booking->user?->notify(new GenericDatabaseNotification(
+                message: "Jadwal booking Anda berhasil diubah ke {$formatted}.",
+                kind: NotificationType::BookingConfirmed->value,
+                extra: $extra,
+            ));
+
+            if ($assignment) {
+                $newPhotographer = Photographer::find($assignment['photographer_id']);
+                $newPhotographer?->notify(new GenericDatabaseNotification(
+                    message: "Anda ditugaskan untuk sesi foto {$booking->code} pada {$formatted}.",
+                    kind: NotificationType::BookingConfirmed->value,
+                    extra: $extra,
+                ));
+
+                if ($oldPhotographerId && $oldPhotographerId !== (int) $assignment['photographer_id']) {
+                    $oldPhotographer = Photographer::find($oldPhotographerId);
+                    $oldPhotographer?->notify(new GenericDatabaseNotification(
+                        message: "Penugasan Anda untuk booking {$booking->code} telah dijadwal ulang.",
+                        kind: NotificationType::BookingConfirmed->value,
+                        extra: $extra,
+                    ));
+                }
+            }
+
+            return ['ok' => true, 'status' => 200, 'message' => 'Booking rescheduled', 'booking' => $booking];
+        });
     }
 
     /**

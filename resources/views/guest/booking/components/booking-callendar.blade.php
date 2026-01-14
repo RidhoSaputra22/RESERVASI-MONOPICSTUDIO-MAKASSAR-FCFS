@@ -3,6 +3,7 @@
 use App\Models\Booking;
 use App\Models\Package;
 use App\Services\ReservationService;
+use App\Enums\BookingStatus;
 use Illuminate\Support\Str;
 use Livewire\Volt\Component;
 
@@ -10,6 +11,8 @@ new class extends Component
 {
 
     public Package $package;
+
+    public ?int $excludeBookingId = null;
 
     protected $listeners = [
         'select-date' => 'selectDate',
@@ -70,7 +73,11 @@ new class extends Component
 
     public function with()
     {
-        $events = Booking::get()
+        $events = Booking::query()
+            ->with(['user', 'package'])
+            ->whereNotNull('scheduled_at')
+            ->where('status', '!=', BookingStatus::Cancelled->value)
+            ->get()
             ->map(function ($booking) {
                 $start = $booking->scheduled_at;
                 $end = $booking->scheduled_at->copy()->addMinutes($booking->package->duration_minutes);
@@ -86,6 +93,7 @@ new class extends Component
             date: $this->selectedDate ?? now()->format('Y-m-d'),
             // date: '2026-01-01',
             durationMinutes: $this->package->duration_minutes,
+            excludeBookingId: $this->excludeBookingId,
         );
 
         // dd($availableSlotTime, $events);
@@ -109,20 +117,30 @@ new class extends Component
             selectedDate = null;
         }
     })">
+    <style>
+        .fc-day-disabled,
+        .fc-day-disabled * {
+            pointer-events: none;
+        }
+
+        .fc-day-disabled {
+            opacity: 0.45;
+            background: #f3f4f6; /* gray-100 */
+        }
+    </style>
     <!-- Trigger -->
     @if($selectedDate && $selectedTime && $isOpen === false)
-        <div
-        wire:loading.class="opacity-50" wire:click="open"
-            class="px-4 py-4 border border-gray-300 border-dashed rounded-md cursor-pointer hover:border-primary hover:bg-gray-50 text-sm font-light">
+    <div wire:loading.class="opacity-50" wire:click="open"
+        class="px-4 py-4 border border-gray-300 border-dashed rounded-md cursor-pointer hover:border-primary hover:bg-gray-50 text-sm font-light">
 
-            Tanggal & Waktu Terpilih: <strong>{{ $selectedDate }} {{ $selectedTime }}</strong>
-        </div>
+        Tanggal & Waktu Terpilih: <strong>{{ $selectedDate }} {{ $selectedTime }}</strong>
+    </div>
     @else
-        <div wire:loading.class="opacity-50" wire:click="open"
-            class="px-4 py-4 border border-gray-300 border-dashed rounded-md cursor-pointer hover:border-primary hover:bg-gray-50 text-sm font-light">
+    <div wire:loading.class="opacity-50" wire:click="open"
+        class="px-4 py-4 border border-gray-300 border-dashed rounded-md cursor-pointer hover:border-primary hover:bg-gray-50 text-sm font-light">
 
-            Klik untuk memilih
-        </div>
+        Klik untuk memilih
+    </div>
     @endif
 
     <!-- Modal -->
@@ -136,6 +154,9 @@ new class extends Component
 
     <!-- FullCalendar -->
     <div wire:ignore x-cloak x-show="step === 'calendar'" x-init="
+        let  todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+
         calendar = new FullCalendar.Calendar($refs.calendar, {
                 locale: 'id',
 
@@ -146,14 +167,31 @@ new class extends Component
                 firstDay: 1, // Senin
                 dayMaxEvents: true,
 
+                validRange: {
+                    start: todayStart,
+                },
+
+                dayCellDidMount: function (arg) {
+                    // Disable yesterday and earlier (visual + no interaction)
+                    var cellDate = new Date(arg.date);
+                    cellDate.setHours(0, 0, 0, 0);
+                    if (cellDate < todayStart) {
+                        arg.el.classList.add('fc-day-disabled');
+                    }
+                },
+
                 dateClick(info) {
+                    var clicked = new Date(info.date);
+                    clicked.setHours(0, 0, 0, 0);
+                    if (clicked < todayStart) {
+                        return;
+                    }
                     selectedDate = info.dateStr;
                     step = 'time';
                     Livewire.dispatch('select-date', {
                         date: info.dateStr
                     });
                 },
-
 
                 headerToolbar: {
                     left: 'prev,next today',

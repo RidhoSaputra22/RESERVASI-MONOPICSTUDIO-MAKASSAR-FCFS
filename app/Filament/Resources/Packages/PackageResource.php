@@ -21,7 +21,7 @@ class PackageResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTag;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Master Data';
+    protected static string|UnitEnum|null $navigationGroup = 'Paket';
 
     protected static ?string $navigationLabel = 'Paket';
 

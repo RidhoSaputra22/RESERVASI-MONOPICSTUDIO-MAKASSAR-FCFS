@@ -16,7 +16,7 @@ new class extends Component {
 
     public ?string $booking_date = null;
     public ?string $booking_time = null;
-    public string $selectedPaymentMethod = '';
+
 
     public function mount(): void
     {
@@ -35,10 +35,7 @@ new class extends Component {
         $this->booking_time = $data['time'];
     }
 
-    public function setPaymentMethod(string $method): void
-    {
-        $this->selectedPaymentMethod = $method;
-    }
+
 
     public function clearData(): void
     {
@@ -73,7 +70,6 @@ new class extends Component {
             'phone' => 'required|string|max:20',
             'booking_date' => 'required|date_format:Y-m-d',
             'booking_time' => 'required|date_format:H:i',
-            'selectedPaymentMethod' => 'required|string',
         ], [
             'name.required' => 'Nama lengkap wajib diisi.',
             'email.required' => 'Email wajib diisi.',
@@ -81,7 +77,6 @@ new class extends Component {
             'phone.required' => 'Nomor telepon wajib diisi.',
             'booking_date.required' => 'Tanggal reservasi wajib diisi.',
             'booking_time.required' => 'Waktu reservasi wajib diisi.',
-            'selectedPaymentMethod.required' => 'Metode pembayaran wajib dipilih.',
         ]);
 
         try {
@@ -98,7 +93,7 @@ new class extends Component {
                 'phone' => $this->phone,
                 'package_id' => $this->package->id,
                 'scheduled_at' => $scheduledAt,
-                'payment_method' => $this->selectedPaymentMethod,
+
             ]);
 
             if (is_array($result) && isset($result['snap_token'])) {
@@ -122,10 +117,7 @@ new class extends Component {
         //
         return [
             //
-            'availablePaymentMethods' => [
-                ['value' => 'bank_transfer', 'label' => 'Transfer Bank'],
-                ['value' => 'e_wallet', 'label' => 'E-Wallet'],
-            ]
+
         ];
     }
 
@@ -207,24 +199,7 @@ new class extends Component {
             @endif
         </div>
 
-        <div class="space-y-4">
-            <h1 class="font-light ">Metode Pembayaran</h1>
 
-            <div class="flex gap-4">
-                @foreach($availablePaymentMethods as $method)
-                <div wire:click="setPaymentMethod('{{ $method['value'] }}')"
-                    class="px-2 py-3 border text-sm font-light border-gray-300 rounded-md cursor-pointer  flex items-center gap-3 {{ $selectedPaymentMethod === $method['value'] ? 'bg-primary text-white' : 'hover:border-primary hover:bg-gray-50' }}">
-                    {{ $method['label'] }}
-                </div>
-                @endforeach
-            </div>
-            @error('selectedPaymentMethod')
-            <p class="text-sm font-light text-red-500">
-                {{ $message }}
-            </p>
-
-            @enderror
-        </div>
         <div>
             @component('components.form.button', [
             'label' => 'Submit',

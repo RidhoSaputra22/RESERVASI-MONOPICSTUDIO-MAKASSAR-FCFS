@@ -21,7 +21,7 @@ class StudioResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Master Data';
+    protected static string|UnitEnum|null $navigationGroup = 'Studio';
 
     protected static ?string $navigationLabel = 'Studio';
 

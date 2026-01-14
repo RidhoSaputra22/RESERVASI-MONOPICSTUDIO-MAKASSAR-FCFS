@@ -21,7 +21,7 @@ class PhotographerResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCamera;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Master Data';
+    protected static string|UnitEnum|null $navigationGroup = 'Fotografer';
 
     protected static ?string $navigationLabel = 'Fotografer';
 
