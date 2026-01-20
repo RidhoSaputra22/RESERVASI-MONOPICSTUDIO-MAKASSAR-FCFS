@@ -1,21 +1,25 @@
 <?php
 
-use App\Models\Booking;
 use App\Enums\BookingStatus;
+use App\Models\Booking;
 use App\Services\ReservationService;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Volt\Component;
 use Livewire\WithPagination;
-use Illuminate\Support\Facades\Auth;
 
-new class extends Component {
+new class extends Component
+{
     use WithPagination;
 
     public ?string $selectedBookingStatus = null;
 
     public ?int $rescheduleBookingId = null;
+
     public bool $isRescheduleOpen = false;
+
     public ?string $reschedule_date = null;
+
     public ?string $reschedule_time = null;
 
     #[\Livewire\Attributes\On('date-time-selected')]
@@ -46,6 +50,7 @@ new class extends Component {
         $userId = Auth::id();
         if (! $userId) {
             $this->redirectRoute('user.login');
+
             return;
         }
 
@@ -62,7 +67,7 @@ new class extends Component {
             $tz = 'Asia/Makassar';
             $scheduledAt = Carbon::parse("{$this->reschedule_date} {$this->reschedule_time}", $tz);
 
-            $service = new ReservationService();
+            $service = new ReservationService;
             $result = $service->rescheduleBookingByUser(
                 bookingId: (int) $this->rescheduleBookingId,
                 userId: (int) $userId,
@@ -72,6 +77,7 @@ new class extends Component {
             if (($result['ok'] ?? false) === true) {
                 session()->flash('success', 'Jadwal booking berhasil diubah.');
                 $this->closeReschedule();
+
                 return;
             }
 
@@ -88,11 +94,12 @@ new class extends Component {
         $userId = Auth::id();
         if (! $userId) {
             $this->redirectRoute('user.login');
+
             return;
         }
 
         try {
-            $service = new ReservationService();
+            $service = new ReservationService;
             $result = $service->cancelBookingByUser(
                 bookingId: $bookingId,
                 userId: (int) $userId,
@@ -103,6 +110,7 @@ new class extends Component {
                 if ($this->rescheduleBookingId === $bookingId) {
                     $this->closeReschedule();
                 }
+
                 return;
             }
 
@@ -118,8 +126,9 @@ new class extends Component {
     {
         $userId = Auth::id();
 
-        if (!$userId) {
+        if (! $userId) {
             $this->redirectRoute('user.login');
+
             return [];
         }
 
@@ -142,29 +151,26 @@ new class extends Component {
                 ->find($this->rescheduleBookingId);
         }
 
-
-
         return [
             'bookings' => $bookings,
             'availableBookingStatus' => $availableBookingStatus,
             'activeRescheduleBooking' => $activeRescheduleBooking,
         ];
     }
-
 }; ?>
 
 
 <div class="p-6 rounded-xl ">
     @if (session()->has('success'))
-        <div class="mb-4 p-3 border border-gray-200 bg-gray-50 rounded-md text-sm font-light">
-            {{ session('success') }}
-        </div>
+    <div class="mb-4 p-3 border border-gray-200 bg-gray-50 rounded-md text-sm font-light">
+        {{ session('success') }}
+    </div>
     @endif
 
     @if (session()->has('error'))
-        <div class="mb-4 p-3 border border-red-200 bg-red-50 rounded-md text-sm font-light text-red-700">
-            {{ session('error') }}
-        </div>
+    <div class="mb-4 p-3 border border-red-200 bg-red-50 rounded-md text-sm font-light text-red-700">
+        {{ session('error') }}
+    </div>
     @endif
 
     <div class="flex">
@@ -174,11 +180,11 @@ new class extends Component {
         </div>
         <div>
             @component('components.form.select', [
-                'label' => '',
-                'wireModel' => 'selectedBookingStatus',
-                'options' => $availableBookingStatus,
-                'default' => ['label' => 'Semua Status', 'value' => 'all']
-                ])
+            'label' => '',
+            'wireModel' => 'selectedBookingStatus',
+            'options' => $availableBookingStatus,
+            'default' => ['label' => 'Semua Status', 'value' => 'all']
+            ])
 
             @endcomponent
         </div>
@@ -209,35 +215,45 @@ new class extends Component {
                     <td class="py-3 pr-4">{{ $booking->photographer?->name ?? '-' }}</td>
                     <td class="py-3 pr-4">
                         @php
-                            $status = $booking->status;
-                            $label = $status?->getLabel() ?? ($status?->value ?? '-');
-                            $color = match ($status?->value) {
-                                'pending' => 'bg-amber-100 text-amber-700',
-                                'confirmed' => 'bg-blue-100 text-blue-700',
-                                'completed' => 'bg-green-100 text-green-700',
-                                'cancelled' => 'bg-red-100 text-red-700',
-                                default => 'bg-gray-100 text-gray-700',
-                            };
+                        $status = $booking->status;
+                        $label = $status?->getLabel() ?? ($status?->value ?? '-');
+                        $color = match ($status?->value) {
+                        'pending' => 'bg-amber-100 text-amber-700',
+                        'confirmed' => 'bg-blue-100 text-blue-700',
+                        'completed' => 'bg-green-100 text-green-700',
+                        'cancelled' => 'bg-red-100 text-red-700',
+                        default => 'bg-gray-100 text-gray-700',
+                        };
                         @endphp
-                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium {{ $color }}">
+                        <span
+                            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium {{ $color }}">
                             {{ $label }}
                         </span>
                     </td>
                     <td class="py-3">
                         <div class="flex items-center gap-2">
-                            @if (in_array($booking->status?->value, ['pending','confirmed'], true))
-                                <button
-                                    wire:click="openReschedule({{ (int) $booking->id }})"
-                                    class="px-3 py-2 bg-gray-900 rounded-sm text-white text-xs">
-                                    Jadwal Ulang
-                                </button>
-                                <button
-                                    wire:click="cancelBooking({{ (int) $booking->id }})"
-                                    class="px-3 py-2 bg-red-600 rounded-sm text-white text-xs">
-                                    Batalkan
-                                </button>
+                            @if ($booking->status === BookingStatus::Confirmed &&
+                            optional($booking->scheduled_at)->isFuture())
+                            <button wire:click="openReschedule({{ (int) $booking->id }})"
+                                class="px-3 py-2 bg-gray-900 rounded-sm text-white text-xs">
+                                Jadwal Ulang
+                            </button>
+                            <button wire:click="cancelBooking({{ (int) $booking->id }})"
+                                class="px-3 py-2 bg-red-600 rounded-sm text-white text-xs">
+                                Batalkan
+                            </button>
+                            @elseif($booking->status === BookingStatus::Pending)
+
+                            <button wire:click="cancelBooking({{ (int) $booking->id }})"
+                                class="px-3 py-2 bg-gray-900 rounded-sm text-white text-xs">
+                                Konfirmasi
+                            </button>
+                            <button wire:click="cancelBooking({{ (int) $booking->id }})"
+                                class="px-3 py-2 bg-red-600 rounded-sm text-white text-xs">
+                                Batalkan
+                            </button>
                             @else
-                                <span class="text-xs text-gray-500">-</span>
+                            <span class="text-xs text-gray-500">-</span>
                             @endif
                         </div>
                     </td>
@@ -257,36 +273,36 @@ new class extends Component {
     </div>
 
     @if ($isRescheduleOpen && $activeRescheduleBooking)
-        @component('components.modal', [
-            'maxWidth' => 'max-w-4xl',
+    @component('components.modal', [
+    'maxWidth' => 'max-w-4xl',
+    ])
+    @slot('title')
+    Jadwal Ulang Booking {{ $activeRescheduleBooking->code ?? '' }}
+    @endslot
+
+    <div class="space-y-4">
+        <div class="text-sm text-gray-600">
+            Pilih tanggal & jam baru, lalu klik simpan.
+        </div>
+
+        @livewire('guest.booking.components.booking-callendar', [
+        'package' => $activeRescheduleBooking->package,
+        'excludeBookingId' => $activeRescheduleBooking->id,
         ])
-            @slot('title')
-                Jadwal Ulang Booking {{ $activeRescheduleBooking->code ?? '' }}
-            @endslot
 
-            <div class="space-y-4">
-                <div class="text-sm text-gray-600">
-                    Pilih tanggal & jam baru, lalu klik simpan.
-                </div>
+        @if ($errors->has('reschedule_date') || $errors->has('reschedule_time'))
+        <p class="text-sm font-light text-red-500">Silakan pilih tanggal dan jam.</p>
+        @endif
 
-                @livewire('guest.booking.components.booking-callendar', [
-                    'package' => $activeRescheduleBooking->package,
-                    'excludeBookingId' => $activeRescheduleBooking->id,
-                ])
-
-                @if ($errors->has('reschedule_date') || $errors->has('reschedule_time'))
-                    <p class="text-sm font-light text-red-500">Silakan pilih tanggal dan jam.</p>
-                @endif
-
-                <div class="flex justify-end gap-2">
-                    <button wire:click="closeReschedule" class="px-4 py-2 border rounded">
-                        Batal
-                    </button>
-                    <button wire:click="applyReschedule" class="px-4 py-2 bg-primary text-white rounded">
-                        Simpan Jadwal
-                    </button>
-                </div>
-            </div>
-        @endcomponent
+        <div class="flex justify-end gap-2">
+            <button wire:click="closeReschedule" class="px-4 py-2 border rounded">
+                Batal
+            </button>
+            <button wire:click="applyReschedule" class="px-4 py-2 bg-primary text-white rounded">
+                Simpan Jadwal
+            </button>
+        </div>
+    </div>
+    @endcomponent
     @endif
 </div>

@@ -1,26 +1,24 @@
 <?php
 
-use Livewire\Volt\Volt;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Livewire\Volt\Volt;
 
 Volt::route('/', 'guest.home.welcome')->name('welcome');
 Volt::route('/booking/{slug}', 'guest.booking.booking')->name('guest.booking');
 Volt::route('/about-us', 'guest.home.about')->name('about-us');
 Volt::route('/gallery', 'guest.booking.gallery')->name('gallery');
 
-
 Volt::route('/paket', 'guest.paket.paket')->name('paket');
 
-
-
 Volt::route('/user/dashboard', 'user.dashboard')->name('user.dashboard');
-
 
 Volt::route('/user/login', 'auth.login')->middleware('guest')->name('user.login');
 Volt::route('/login', 'auth.login')->middleware('guest')->name('login');
 Volt::route('/user/register', 'auth.regist')->middleware('guest')->name('user.register');
 
+// Laporan
+Volt::route('laporan/booking', 'laporan.booking')->name('laporan.booking');
 
 Route::post('/user/logout', function () {
     Auth::logout();

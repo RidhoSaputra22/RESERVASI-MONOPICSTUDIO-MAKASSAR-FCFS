@@ -2,8 +2,11 @@
 
 use Livewire\Volt\Component;
 
-new class extends Component {
+new class extends Component
+{
     //
+
+
 }; ?>
 
 <div>
@@ -59,7 +62,7 @@ new class extends Component {
                             <!-- <iframe width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe> -->
                             <iframe class="absolute inset-0 w-full h-full" loading="lazy"
                                 referrerpolicy="no-referrer-when-downgrade"
-                                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4713.6729435143225!2d119.48616617498222!3d-5.141333494835864!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dbee3001f5f4dd5%3A0x798e25b56d65c128!2sMonopic%20Studio%20Makassar!5e1!3m2!1sid!2sid!4v1767325119371!5m2!1sid!2sid">
+                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4713.6729435143225!2d119.48616617498222!3d-5.141333494835864!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dbee3001f5f4dd5%3A0x798e25b56d65c128!2sMonopic%20Studio%20Makassar!5e1!3m2!1sid!2sid!4v1767325119371!5m2!1sid!2sid">
                             </iframe>
                         </div>
                     </div>
