@@ -1,5 +1,8 @@
 <?php
 
+use App\Enums\UserRole;
+use App\Models\User;
+use App\Notifications\GenericDatabaseNotification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
@@ -27,3 +30,23 @@ Route::post('/user/logout', function () {
 
     return redirect()->route('user.login');
 })->middleware('auth')->name('user.logout');
+
+Route::get('/test-email', function () {
+    $user = User::firstOrCreate(
+        [
+            'email' => 'saputra22022@gmail.com',
+        ], [
+            'name' => 'Saputra',
+            'hp' => '081344968521',
+            'role' => UserRole::Customer,
+            'password' => bcrypt('password'),
+        ]);
+
+    $user->notify(new GenericDatabaseNotification(
+        message: 'This is a test email notification.',
+        kind: 'info',
+    ));
+
+    return 'Email notification sent to '.$user->email;
+
+});
