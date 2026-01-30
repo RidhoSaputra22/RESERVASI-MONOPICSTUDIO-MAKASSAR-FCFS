@@ -1,22 +1,25 @@
 <?php
 
-use Carbon\Carbon;
 use App\Models\Package;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\On;
 use Livewire\Volt\Component;
-use Illuminate\Support\Facades\Auth;
 
-new class extends Component {
+new class extends Component
+{
     //
     public Package $package;
 
     public string $name = '';
+
     public string $email = '';
+
     public string $phone = '';
 
     public ?string $booking_date = null;
-    public ?string $booking_time = null;
 
+    public ?string $booking_time = null;
 
     public function mount(): void
     {
@@ -35,14 +38,11 @@ new class extends Component {
         $this->booking_time = $data['time'];
     }
 
-
-
     public function clearData(): void
     {
         $this->reset([
             'booking_date',
             'booking_time',
-            'selectedPaymentMethod',
         ]);
 
         $this->dispatch('reset-booking-calendar');
@@ -54,13 +54,12 @@ new class extends Component {
         session()->flash('success', 'Reservasi berhasil dibuat!');
     }
 
-
-
     public function submitForm(): void
     {
         if (! Auth::check()) {
             session()->flash('error', 'Silakan login terlebih dahulu untuk melakukan reservasi.');
             $this->redirectRoute('login');
+
             return;
         }
 
@@ -85,7 +84,7 @@ new class extends Component {
             $tz = 'Asia/Makassar';
             $scheduledAt = Carbon::parse("{$this->booking_date} {$this->booking_time}", $tz);
 
-            $reservationService = new \App\Services\ReservationService();
+            $reservationService = new \App\Services\ReservationService;
             $result = $reservationService->createReservation([
                 'user_id' => $user->id,
                 'name' => $this->name,
@@ -103,12 +102,9 @@ new class extends Component {
             $this->clearData();
             $this->dispatch('booking-created');
         } catch (\Throwable $e) {
-            report($e);
-            $this->addError('form', 'Terjadi kesalahan saat menyimpan reservasi. Silakan coba lagi.');
+
+            $this->addError('form', 'Terjadi kesalahan saat menyimpan reservasi. Silakan coba lagi.'.$e->getMessage());
         }
-
-
-
 
     }
 
@@ -120,8 +116,6 @@ new class extends Component {
 
         ];
     }
-
-
 }; ?>
 
 <div>
@@ -216,64 +210,66 @@ new class extends Component {
 </div>
 
 @push('scripts')
-    @once
-        @php
-            $isProduction = (bool) config('services.midtrans.is_production', false);
-            $clientKey = (string) config('services.midtrans.client_key', '');
-            $snapBaseUrl = $isProduction
-                ? 'https://app.midtrans.com/snap/snap.js'
-                : 'https://app.sandbox.midtrans.com/snap/snap.js';
-        @endphp
+@once
+@php
+$isProduction = (bool) config('services.midtrans.is_production', false);
+$clientKey = (string) config('services.midtrans.client_key', '');
+$snapBaseUrl = $isProduction
+? 'https://app.midtrans.com/snap/snap.js'
+: 'https://app.sandbox.midtrans.com/snap/snap.js';
+@endphp
 
-        @if ($clientKey !== '')
-            <script src="{{ $snapBaseUrl }}" data-client-key="{{ $clientKey }}"></script>
-        @endif
+@if ($clientKey !== '')
+<script src="{{ $snapBaseUrl }}" data-client-key="{{ $clientKey }}"></script>
+@endif
 
-        <script>
-        (function () {
-            function waitForSnap(maxMs) {
-                return new Promise(function (resolve, reject) {
-                    var start = Date.now();
-                    (function tick() {
-                        if (window.snap && typeof window.snap.pay === 'function') {
-                            return resolve();
-                        }
-                        if (Date.now() - start > maxMs) {
-                            return reject(new Error('Midtrans Snap is not available'));
-                        }
-                        setTimeout(tick, 100);
-                    })();
-                });
-            }
+<script>
+(function() {
+    function waitForSnap(maxMs) {
+        return new Promise(function(resolve, reject) {
+            var start = Date.now();
+            (function tick() {
+                if (window.snap && typeof window.snap.pay === 'function') {
+                    return resolve();
+                }
+                if (Date.now() - start > maxMs) {
+                    return reject(new Error('Midtrans Snap is not available'));
+                }
+                setTimeout(tick, 100);
+            })();
+        });
+    }
 
-            document.addEventListener('open-midtrans-snap', function (event) {
-                var detail = event && event.detail ? event.detail : {};
-                var snapToken = detail.snapToken;
-                if (!snapToken) return;
+    document.addEventListener('open-midtrans-snap', function(event) {
+        var detail = event && event.detail ? event.detail : {};
+        var snapToken = detail.snapToken;
+        if (!snapToken) return;
 
-                waitForSnap(5000)
-                    .then(function () {
-                        window.snap.pay(snapToken, {
-                            onSuccess: function (result) {
-                                Livewire.dispatch('payment-success', { payload: result || {} });
-                            },
-                            onPending: function () {
-                                window.location.reload();
-                            },
-                            onError: function () {
-                                alert('Pembayaran gagal diproses. Silakan coba lagi.');
-                            },
-                            onClose: function () {
-                                // user closed the popup
-                            }
+        waitForSnap(5000)
+            .then(function() {
+                window.snap.pay(snapToken, {
+                    onSuccess: function(result) {
+                        Livewire.dispatch('payment-success', {
+                            payload: result || {}
                         });
-                    })
-                    .catch(function (err) {
-                        console.error(err);
-                        alert('Gagal memuat pembayaran. Silakan refresh halaman dan coba lagi.');
-                    });
+                    },
+                    onPending: function() {
+                        window.location.reload();
+                    },
+                    onError: function() {
+                        alert('Pembayaran gagal diproses. Silakan coba lagi.');
+                    },
+                    onClose: function() {
+                        // user closed the popup
+                    }
+                });
+            })
+            .catch(function(err) {
+                console.error(err);
+                alert('Gagal memuat pembayaran. Silakan refresh halaman dan coba lagi.');
             });
-        })();
-        </script>
-    @endonce
+    });
+})();
+</script>
+@endonce
 @endpush

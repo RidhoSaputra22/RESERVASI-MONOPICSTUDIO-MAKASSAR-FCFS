@@ -1,5 +1,5 @@
 <div>
-    <section class="h-screen w-full max-w-7xl mx-auto min-h-screen p-24 space-y-14 text-primary">
+    <section class="min-h-screen w-full max-w-7xl mx-auto min-h-screen p-24 space-y-14 text-primary">
         <div class="space-y-5 flex-1 pt-8 text-center" data-aos="fade-up">
             <h1 class="text-6xl/tight font-semibold">Frequently Asked Question</h1>
             <p class="text-md/loose font-light ">Berikut pertanyaan yang paling sering ditanyai</p>
