@@ -31,6 +31,18 @@ Route::post('/user/logout', function () {
     return redirect()->route('user.login');
 })->middleware('auth')->name('user.logout');
 
+// Photographer Routes
+Volt::route('/photographer/login', 'photographer.login')->name('photographer.login');
+Volt::route('/photographer/dashboard', 'photographer.dashboard')->name('photographer.dashboard');
+
+Route::post('/photographer/logout', function () {
+    Auth::guard('photographer')->logout();
+    session()->invalidate();
+    session()->regenerateToken();
+
+    return redirect()->route('photographer.login');
+})->name('photographer.logout');
+
 Route::get('/test-email', function () {
     $user = User::firstOrCreate(
         [

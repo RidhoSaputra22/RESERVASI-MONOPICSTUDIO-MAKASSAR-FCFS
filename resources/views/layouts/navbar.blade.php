@@ -134,8 +134,50 @@ return request()->routeIs($patterns);
 
 
 
+            @elseif (auth('photographer')->check())
+            <li class="ml-3 relative">
+                @component('components.dropdown', [
+                'align' => 'right',
+                'width' => 'min-w-sm',
+                ])
+                @slot('trigger')
+                Hello, {{ auth('photographer')->user()->name }}
+                @endslot
+                @slot('content')
+                <div>
+                    <div class="border-b border-gray-400">
+                        <div class="flex gap-3 items-center mb-3 mx-4 my-3">
+                            <div class="size-13 aspect-square rounded-full border bg-gray-50 flex items-center justify-center">
+                                <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h1 class="text-lg/tight font-semibold">{{ auth('photographer')->user()->name }}</h1>
+                                <span class="text-sm/tight font-light text-gray-500">{{ auth('photographer')->user()->email }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <a href="{{ route('photographer.dashboard') }}"
+                            class="text-sm font-medium block px-4 py-4 hover:bg-gray-100">
+                            Dashboard
+                        </a>
+                        <form method="POST" action="{{ route('photographer.logout') }}">
+                            @csrf
+                            <button type="submit"
+                                class="text-sm font-medium block w-full text-left px-4 py-4 hover:bg-gray-100">
+                                Logout
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                @endslot
+                @endcomponent
+            </li>
             @endif
-            @if(!auth()->check())
+            @if(!auth()->check() && !auth('photographer')->check())
             <li>
                 <a href="{{ route('user.login') }}" class="hover:text-primary">Masuk</a>
             </li>
