@@ -1,5 +1,7 @@
 <?php
 
+use App\Enums\BookingStatus;
+use App\Models\Booking;
 use App\Models\Package;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -20,6 +22,8 @@ new class extends Component
     public ?string $booking_date = null;
 
     public ?string $booking_time = null;
+
+    public ?string $pendingBookingCode = null;
 
     public function mount(): void
     {
@@ -43,6 +47,7 @@ new class extends Component
         $this->reset([
             'booking_date',
             'booking_time',
+            'pendingBookingCode',
         ]);
 
         $this->dispatch('reset-booking-calendar');
@@ -52,6 +57,32 @@ new class extends Component
     public function handleBookingSuccess()
     {
         session()->flash('success', 'Reservasi berhasil dibuat!');
+    }
+
+    #[On('payment-closed')]
+    public function handlePaymentClosed(): void
+    {
+        if (! $this->pendingBookingCode) {
+            return;
+        }
+
+        $booking = Booking::where('code', $this->pendingBookingCode)->first();
+
+        if ($booking && $booking->status === BookingStatus::Pending) {
+            $booking->update(['status' => BookingStatus::Cancelled]);
+
+            $booking->loadMissing('user');
+            $booking->user?->notify(new \App\Notifications\GenericDatabaseNotification(
+                message: 'Pembayaran dibatalkan. Booking Anda telah dibatalkan.',
+                kind: \App\Enums\NotificationType::Cancelled->value,
+                extra: ['booking_id' => $booking->id, 'code' => $booking->code],
+            ));
+
+            session()->flash('error', 'Pembayaran dibatalkan. Reservasi Anda telah dibatalkan.');
+        }
+
+        $this->pendingBookingCode = null;
+        $this->dispatch('booking-cancelled');
     }
 
     public function submitForm(): void
@@ -96,10 +127,10 @@ new class extends Component
             ]);
 
             if (is_array($result) && isset($result['snap_token'])) {
+                $this->pendingBookingCode = $result['booking']->code ?? null;
                 $this->dispatch('open-midtrans-snap', snapToken: $result['snap_token']);
             }
 
-            $this->clearData();
             $this->dispatch('booking-created');
         } catch (\Throwable $e) {
 
@@ -257,10 +288,12 @@ $snapBaseUrl = $isProduction
                         window.location.reload();
                     },
                     onError: function() {
-                        alert('Pembayaran gagal diproses. Silakan coba lagi.');
+                        Livewire.dispatch('payment-closed');
+                        alert(
+                        'Pembayaran gagal diproses. Reservasi Anda telah dibatalkan.');
                     },
                     onClose: function() {
-                        // user closed the popup
+                        Livewire.dispatch('payment-closed');
                     }
                 });
             })
