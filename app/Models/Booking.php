@@ -22,11 +22,13 @@ class Booking extends Model
         'snap_token',
         'status',
         'code',
+        'readiness_confirmed_at',
     ];
 
     protected $casts = [
         'status' => BookingStatus::class,
         'scheduled_at' => 'datetime',
+        'readiness_confirmed_at' => 'datetime',
     ];
 
     protected static function boot()

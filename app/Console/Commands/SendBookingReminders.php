@@ -56,6 +56,7 @@ class SendBookingReminders extends Command
         foreach ($bookings as $booking) {
             try {
                 $scheduledTime = $booking->scheduled_at->format('d M Y H:i');
+                $confirmationUrl = route('booking.confirm-readiness', ['bookingId' => $booking->id]);
 
                 $message = "Reminder: Booking Anda akan segera dimulai!\n\n";
                 $message .= "Kode Booking: {$booking->code}\n";
@@ -74,6 +75,7 @@ class SendBookingReminders extends Command
                             'booking_id' => $booking->id,
                             'booking_code' => $booking->code,
                             'scheduled_at' => $booking->scheduled_at->toIso8601String(),
+                            'confirmation_url' => $confirmationUrl,
                         ]
                     )
                 );

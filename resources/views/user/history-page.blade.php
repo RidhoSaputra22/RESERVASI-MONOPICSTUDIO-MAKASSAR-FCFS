@@ -202,6 +202,7 @@ new class extends Component
                     <th class="py-3 pr-4">Studio</th>
                     <th class="py-3 pr-4">Fotografer</th>
                     <th class="py-3 pr-4">Status</th>
+                    <th class="py-3 pr-4">Konfirmasi</th>
                     <th class="py-3">Aksi</th>
                 </tr>
             </thead>
@@ -230,30 +231,63 @@ new class extends Component
                             {{ $label }}
                         </span>
                     </td>
+                    <td class="py-3 pr-4">
+                        @if ($booking->readiness_confirmed_at)
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                            ✓ Dikonfirmasi
+                        </span>
+                        <div class="text-xs text-gray-500 mt-1">
+                            {{ $booking->readiness_confirmed_at->format('d M Y H:i') }}
+                        </div>
+                        @else
+                        <span class="text-xs text-gray-400">Belum dikonfirmasi</span>
+                        @endif
+                    </td>
                     <td class="py-3">
                         <div class="flex items-center gap-2">
-                            @if ($booking->status === BookingStatus::Confirmed &&
-                            optional($booking->scheduled_at)->isFuture())
-                            <button wire:click="openReschedule({{ (int) $booking->id }})"
-                                class="px-3 py-2 bg-gray-900 rounded-sm text-white text-xs">
-                                Jadwal Ulang
-                            </button>
-                            <button wire:click="cancelBooking({{ (int) $booking->id }})"
-                                class="px-3 py-2 bg-red-600 rounded-sm text-white text-xs">
-                                Batalkan
-                            </button>
-                            @elseif($booking->status === BookingStatus::Pending)
+                            @php
+                            $isWithin30Minutes = false;
+                            $diffInMinutes = null;
+                            if ($booking->scheduled_at) {
+                                $now = \Carbon\Carbon::now();
+                                $diffInMinutes = $now->diffInMinutes($booking->scheduled_at, false);
+                                // Jika dalam range 30-60 menit sebelum jadwal
+                                $isWithin30Minutes = $diffInMinutes >= 0 && $diffInMinutes <= 60;
+                            }
+                            @endphp
 
-                            <button wire:click="cancelBooking({{ (int) $booking->id }})"
-                                class="px-3 py-2 bg-gray-900 rounded-sm text-white text-xs">
-                                Konfirmasi
-                            </button>
-                            <button wire:click="cancelBooking({{ (int) $booking->id }})"
-                                class="px-3 py-2 bg-red-600 rounded-sm text-white text-xs">
-                                Batalkan
-                            </button>
+                            @if ($booking->status === BookingStatus::Confirmed && optional($booking->scheduled_at)->isFuture())
+                                @if ($isWithin30Minutes && !$booking->readiness_confirmed_at)
+                                    {{-- Tombol Konfirmasi Kesiapan --}}
+                                    <a href="{{ route('booking.confirm-readiness', ['bookingId' => $booking->id]) }}"
+                                        class="px-3 py-2 bg-green-600 rounded-sm text-white text-xs hover:bg-green-700">
+                                        ✓ Konfirmasi Kesiapan
+                                    </a>
+                                @elseif ($isWithin30Minutes && $booking->readiness_confirmed_at)
+                                    {{-- Sudah dikonfirmasi --}}
+                                    <span class="text-xs text-green-600">Siap ✓</span>
+                                @else
+                                    {{-- Tombol normal: Jadwal Ulang & Batalkan --}}
+                                    <button wire:click="openReschedule({{ (int) $booking->id }})"
+                                        class="px-3 py-2 bg-gray-900 rounded-sm text-white text-xs">
+                                        Jadwal Ulang
+                                    </button>
+                                    <button wire:click="cancelBooking({{ (int) $booking->id }})"
+                                        class="px-3 py-2 bg-red-600 rounded-sm text-white text-xs">
+                                        Batalkan
+                                    </button>
+                                @endif
+                            @elseif($booking->status === BookingStatus::Pending)
+                                <button wire:click="cancelBooking({{ (int) $booking->id }})"
+                                    class="px-3 py-2 bg-gray-900 rounded-sm text-white text-xs">
+                                    Konfirmasi
+                                </button>
+                                <button wire:click="cancelBooking({{ (int) $booking->id }})"
+                                    class="px-3 py-2 bg-red-600 rounded-sm text-white text-xs">
+                                    Batalkan
+                                </button>
                             @else
-                            <span class="text-xs text-gray-500">-</span>
+                                <span class="text-xs text-gray-500">-</span>
                             @endif
                         </div>
                     </td>
@@ -261,7 +295,7 @@ new class extends Component
 
                 @empty
                 <tr>
-                    <td colspan="6" class="py-6 text-center text-gray-500">Belum ada riwayat pesanan.</td>
+                    <td colspan="8" class="py-6 text-center text-gray-500">Belum ada riwayat pesanan.</td>
                 </tr>
                 @endforelse
             </tbody>

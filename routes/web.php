@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\UserRole;
+use App\Http\Controllers\BookingConfirmationController;
 use App\Models\User;
 use App\Notifications\GenericDatabaseNotification;
 use Illuminate\Support\Facades\Auth;
@@ -19,6 +20,11 @@ Volt::route('/user/dashboard', 'user.dashboard')->name('user.dashboard');
 Volt::route('/user/login', 'auth.login')->middleware('guest')->name('user.login');
 Volt::route('/login', 'auth.login')->middleware('guest')->name('login');
 Volt::route('/user/register', 'auth.regist')->middleware('guest')->name('user.register');
+
+// Booking Confirmation
+Route::get('/booking/{bookingId}/confirm-readiness', [BookingConfirmationController::class, 'confirmReadiness'])
+    ->middleware('auth')
+    ->name('booking.confirm-readiness');
 
 // Laporan
 Volt::route('laporan/booking', 'laporan.booking')->name('laporan.booking');

@@ -2,15 +2,12 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use App\Models\Studio;
-use App\Models\Package;
-use App\Models\Category;
 use App\Models\Photographer;
-use Illuminate\Database\Seeder;
-use Database\Seeders\ProductSeeder;
-use Illuminate\Support\Facades\Hash;
+use App\Models\Studio;
+use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -32,6 +29,14 @@ class DatabaseSeeder extends Seeder
         ]);
 
         User::factory()->create([
+            'name' => 'Ridho Saputra',
+            'email' => 'saputra22022@gmail.com',
+            'hp' => '081344968521',
+            'password' => Hash::make('ridho123123'),
+            'photo' => null,
+        ]);
+
+        User::factory()->create([
             'name' => 'Admin',
             'email' => 'admin@gmail.com',
             'hp' => '081234567891',
@@ -43,8 +48,6 @@ class DatabaseSeeder extends Seeder
         //     ['is_available' => true]
         // );
         // Studio::factory(1)->create();
-
-
 
         $this->call([
             // CategorySeeder::class,
