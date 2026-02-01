@@ -40,6 +40,12 @@ class BookingForm
                     ->options(BookingStatus::class)
                     ->default('pending')
                     ->required(),
+                DateTimePicker::make('readiness_confirmed_at')
+                    ->label('Konfirmasi Kesiapan')
+                    ->displayFormat('d M Y H:i')
+                    ->disabled()
+                    ->dehydrated(false)
+                    ->helperText('User mengkonfirmasi kesiapan 30 menit sebelum jadwal'),
                 TextInput::make('snap_token')
                     ->nullable(),
                 TextInput::make('code')

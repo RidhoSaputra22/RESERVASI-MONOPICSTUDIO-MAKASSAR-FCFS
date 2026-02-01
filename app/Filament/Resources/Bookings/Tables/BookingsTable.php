@@ -37,6 +37,15 @@ class BookingsTable
                     ->badge()
                     ->sortable()
                     ->searchable(),
+                TextColumn::make('readiness_confirmed_at')
+                    ->label('Konfirmasi Kesiapan')
+                    ->dateTime()
+                    ->sortable()
+                    ->placeholder('-')
+                    ->description(fn ($record) => $record->readiness_confirmed_at
+                        ? 'User sudah konfirmasi siap'
+                        : 'Belum dikonfirmasi')
+                    ->color(fn ($record) => $record->readiness_confirmed_at ? 'success' : 'gray'),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
