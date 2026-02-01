@@ -22,6 +22,9 @@ class PhotographerForm
                     ->nullable(),
                 Toggle::make('is_available')
                     ->required(),
+                TextInput::make('password')
+                    ->password()
+                    ->required(),
             ]);
     }
 }
