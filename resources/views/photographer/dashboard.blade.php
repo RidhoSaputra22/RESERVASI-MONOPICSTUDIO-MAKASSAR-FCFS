@@ -12,12 +12,14 @@ new class extends Component
     use WithPagination;
 
     public ?string $selectedStatus = null;
+
     public ?string $selectedDate = null;
 
     public function mount(): void
     {
-        if (!Auth::guard('photographer')->check()) {
-            $this->redirectRoute('photographer.login');
+        if (! Auth::guard('photographer')->check()) {
+            $this->redirectRoute('login');
+
             return;
         }
     }
@@ -36,8 +38,9 @@ new class extends Component
     {
         $photographer = Auth::guard('photographer')->user();
 
-        if (!$photographer) {
+        if (! $photographer) {
             $this->redirectRoute('photographer.login');
+
             return [];
         }
 
@@ -115,7 +118,8 @@ new class extends Component
                     <div class="flex items-center">
                         <div class="flex-shrink-0 bg-blue-100 rounded-full p-3">
                             <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
                         </div>
                         <div class="ml-4">
@@ -129,7 +133,8 @@ new class extends Component
                     <div class="flex items-center">
                         <div class="flex-shrink-0 bg-green-100 rounded-full p-3">
                             <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                         </div>
                         <div class="ml-4">
@@ -143,7 +148,8 @@ new class extends Component
                     <div class="flex items-center">
                         <div class="flex-shrink-0 bg-amber-100 rounded-full p-3">
                             <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                         </div>
                         <div class="ml-4">
@@ -162,18 +168,13 @@ new class extends Component
                             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                                 <h2 class="text-lg font-semibold text-gray-900">Jadwal Sesi Foto</h2>
                                 <div class="flex flex-col sm:flex-row gap-3">
-                                    <input
-                                        type="date"
-                                        wire:model.live="selectedDate"
-                                        class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                                    >
-                                    <select
-                                        wire:model.live="selectedStatus"
-                                        class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                                    >
+                                    <input type="date" wire:model.live="selectedDate"
+                                        class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                                    <select wire:model.live="selectedStatus"
+                                        class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                                         <option value="all">Semua Status</option>
                                         @foreach ($availableStatuses as $status)
-                                            <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
+                                        <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -194,45 +195,48 @@ new class extends Component
                                 </thead>
                                 <tbody class="divide-y divide-gray-200">
                                     @forelse ($bookings as $booking)
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="py-3 px-4 font-medium">{{ $booking->code ?? '-' }}</td>
-                                            <td class="py-3 px-4">
-                                                @if ($booking->scheduled_at)
-                                                    <div class="text-gray-900">{{ $booking->scheduled_at->format('d M Y') }}</div>
-                                                    <div class="text-gray-500 text-xs">{{ $booking->scheduled_at->format('H:i') }} WITA</div>
-                                                @else
-                                                    <span class="text-gray-400">-</span>
-                                                @endif
-                                            </td>
-                                            <td class="py-3 px-4">{{ $booking->package?->name ?? '-' }}</td>
-                                            <td class="py-3 px-4">
-                                                <div>{{ $booking->user?->name ?? '-' }}</div>
-                                                <div class="text-gray-500 text-xs">{{ $booking->user?->hp ?? '' }}</div>
-                                            </td>
-                                            <td class="py-3 px-4">{{ $booking->studio?->name ?? '-' }}</td>
-                                            <td class="py-3 px-4">
-                                                @php
-                                                    $status = $booking->status;
-                                                    $label = $status?->getLabel() ?? ($status?->value ?? '-');
-                                                    $color = match ($status?->value) {
-                                                        'pending' => 'bg-amber-100 text-amber-700',
-                                                        'confirmed' => 'bg-blue-100 text-blue-700',
-                                                        'completed' => 'bg-green-100 text-green-700',
-                                                        'cancelled' => 'bg-red-100 text-red-700',
-                                                        default => 'bg-gray-100 text-gray-700',
-                                                    };
-                                                @endphp
-                                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium {{ $color }}">
-                                                    {{ $label }}
-                                                </span>
-                                            </td>
-                                        </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="py-3 px-4 font-medium">{{ $booking->code ?? '-' }}</td>
+                                        <td class="py-3 px-4">
+                                            @if ($booking->scheduled_at)
+                                            <div class="text-gray-900">{{ $booking->scheduled_at->format('d M Y') }}
+                                            </div>
+                                            <div class="text-gray-500 text-xs">
+                                                {{ $booking->scheduled_at->format('H:i') }} WITA</div>
+                                            @else
+                                            <span class="text-gray-400">-</span>
+                                            @endif
+                                        </td>
+                                        <td class="py-3 px-4">{{ $booking->package?->name ?? '-' }}</td>
+                                        <td class="py-3 px-4">
+                                            <div>{{ $booking->user?->name ?? '-' }}</div>
+                                            <div class="text-gray-500 text-xs">{{ $booking->user?->hp ?? '' }}</div>
+                                        </td>
+                                        <td class="py-3 px-4">{{ $booking->studio?->name ?? '-' }}</td>
+                                        <td class="py-3 px-4">
+                                            @php
+                                            $status = $booking->status;
+                                            $label = $status?->getLabel() ?? ($status?->value ?? '-');
+                                            $color = match ($status?->value) {
+                                            'pending' => 'bg-amber-100 text-amber-700',
+                                            'confirmed' => 'bg-blue-100 text-blue-700',
+                                            'completed' => 'bg-green-100 text-green-700',
+                                            'cancelled' => 'bg-red-100 text-red-700',
+                                            default => 'bg-gray-100 text-gray-700',
+                                            };
+                                            @endphp
+                                            <span
+                                                class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium {{ $color }}">
+                                                {{ $label }}
+                                            </span>
+                                        </td>
+                                    </tr>
                                     @empty
-                                        <tr>
-                                            <td colspan="6" class="py-8 text-center text-gray-500">
-                                                Belum ada jadwal sesi foto.
-                                            </td>
-                                        </tr>
+                                    <tr>
+                                        <td colspan="6" class="py-8 text-center text-gray-500">
+                                            Belum ada jadwal sesi foto.
+                                        </td>
+                                    </tr>
                                     @endforelse
                                 </tbody>
                             </table>
@@ -254,28 +258,31 @@ new class extends Component
                         </div>
                         <div class="p-4">
                             @forelse ($todayBookings as $booking)
-                                <div class="flex items-start gap-3 {{ !$loop->last ? 'mb-4 pb-4 border-b border-gray-100' : '' }}">
-                                    <div class="flex-shrink-0 w-12 text-center">
-                                        <div class="text-lg font-bold text-primary">{{ $booking->scheduled_at?->format('H:i') }}</div>
-                                    </div>
-                                    <div class="flex-1 min-w-0">
-                                        <p class="font-medium text-gray-900 truncate">{{ $booking->package?->name ?? '-' }}</p>
-                                        <p class="text-sm text-gray-500">{{ $booking->user?->name ?? '-' }}</p>
-                                        <p class="text-xs text-gray-400">{{ $booking->studio?->name ?? '-' }}</p>
-                                    </div>
-                                    @php
-                                        $status = $booking->status;
-                                        $dotColor = match ($status?->value) {
-                                            'confirmed' => 'bg-blue-500',
-                                            'completed' => 'bg-green-500',
-                                            'cancelled' => 'bg-red-500',
-                                            default => 'bg-amber-500',
-                                        };
-                                    @endphp
-                                    <span class="flex-shrink-0 w-2 h-2 mt-2 rounded-full {{ $dotColor }}"></span>
+                            <div
+                                class="flex items-start gap-3 {{ !$loop->last ? 'mb-4 pb-4 border-b border-gray-100' : '' }}">
+                                <div class="flex-shrink-0 w-12 text-center">
+                                    <div class="text-lg font-bold text-primary">
+                                        {{ $booking->scheduled_at?->format('H:i') }}</div>
                                 </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="font-medium text-gray-900 truncate">{{ $booking->package?->name ?? '-' }}
+                                    </p>
+                                    <p class="text-sm text-gray-500">{{ $booking->user?->name ?? '-' }}</p>
+                                    <p class="text-xs text-gray-400">{{ $booking->studio?->name ?? '-' }}</p>
+                                </div>
+                                @php
+                                $status = $booking->status;
+                                $dotColor = match ($status?->value) {
+                                'confirmed' => 'bg-blue-500',
+                                'completed' => 'bg-green-500',
+                                'cancelled' => 'bg-red-500',
+                                default => 'bg-amber-500',
+                                };
+                                @endphp
+                                <span class="flex-shrink-0 w-2 h-2 mt-2 rounded-full {{ $dotColor }}"></span>
+                            </div>
                             @empty
-                                <p class="text-sm text-gray-500 text-center py-4">Tidak ada jadwal hari ini.</p>
+                            <p class="text-sm text-gray-500 text-center py-4">Tidak ada jadwal hari ini.</p>
                             @endforelse
                         </div>
                     </div>
@@ -287,18 +294,22 @@ new class extends Component
                         </div>
                         <div class="p-4">
                             @forelse ($upcomingBookings as $booking)
-                                <div class="flex items-start gap-3 {{ !$loop->last ? 'mb-4 pb-4 border-b border-gray-100' : '' }}">
-                                    <div class="flex-shrink-0 text-center">
-                                        <div class="text-xs text-gray-500">{{ $booking->scheduled_at?->format('d M') }}</div>
-                                        <div class="text-sm font-bold text-primary">{{ $booking->scheduled_at?->format('H:i') }}</div>
+                            <div
+                                class="flex items-start gap-3 {{ !$loop->last ? 'mb-4 pb-4 border-b border-gray-100' : '' }}">
+                                <div class="flex-shrink-0 text-center">
+                                    <div class="text-xs text-gray-500">{{ $booking->scheduled_at?->format('d M') }}
                                     </div>
-                                    <div class="flex-1 min-w-0">
-                                        <p class="font-medium text-gray-900 truncate">{{ $booking->package?->name ?? '-' }}</p>
-                                        <p class="text-sm text-gray-500">{{ $booking->user?->name ?? '-' }}</p>
-                                    </div>
+                                    <div class="text-sm font-bold text-primary">
+                                        {{ $booking->scheduled_at?->format('H:i') }}</div>
                                 </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="font-medium text-gray-900 truncate">{{ $booking->package?->name ?? '-' }}
+                                    </p>
+                                    <p class="text-sm text-gray-500">{{ $booking->user?->name ?? '-' }}</p>
+                                </div>
+                            </div>
                             @empty
-                                <p class="text-sm text-gray-500 text-center py-4">Tidak ada jadwal mendatang.</p>
+                            <p class="text-sm text-gray-500 text-center py-4">Tidak ada jadwal mendatang.</p>
                             @endforelse
                         </div>
                     </div>

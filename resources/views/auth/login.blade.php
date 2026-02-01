@@ -1,15 +1,17 @@
 <?php
 
-use Livewire\Volt\Component;
-use App\Enums\UserRole;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Livewire\Volt\Component;
 
-new class extends Component {
+new class extends Component
+{
     public string $email = '';
+
     public string $password = '';
+
     public bool $remember = false;
 
     public function mount(): void
@@ -37,21 +39,29 @@ new class extends Component {
             ]);
         }
 
-        if (! Auth::attempt(['email' => $credentials['email'], 'password' => $credentials['password']], $credentials['remember'])) {
-            RateLimiter::hit($throttleKey, 60);
+        if (Auth::attempt(['email' => $credentials['email'], 'password' => $credentials['password']], $credentials['remember'])) {
 
-            throw ValidationException::withMessages([
-                'email' => 'Email atau password salah.',
-            ]);
+            RateLimiter::clear($throttleKey);
+            request()->session()->regenerate();
+
+            return redirect()->intended();
+
         }
 
-        RateLimiter::clear($throttleKey);
-        request()->session()->regenerate();
+        if (Auth::guard('photographer')->attempt(['email' => $credentials['email'], 'password' => $credentials['password']], $credentials['remember'])) {
+            RateLimiter::clear($throttleKey);
+            request()->session()->regenerate();
 
-        return redirect()->intended();
+            return redirect()->route('photographer.dashboard');
+        }
+
+        RateLimiter::hit($throttleKey, 60);
+
+        throw ValidationException::withMessages([
+            'email' => 'Email atau password salah.',
+        ]);
+
     }
-
-
 }; ?>
 
 <div>
