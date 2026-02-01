@@ -67,23 +67,13 @@ class StatsOverviewWidget extends BaseWidget
                 ->descriptionIcon('heroicon-m-calendar-days')
                 ->color('success'),
 
-            Stat::make('Menunggu Konfirmasi', $pendingBookings)
-                ->description('Booking pending')
-                ->descriptionIcon('heroicon-m-clock')
-                ->color($pendingBookings > 0 ? 'warning' : 'success'),
-
             Stat::make('Jadwal Hari Ini', $confirmedToday)
                 ->description('Booking confirmed hari ini')
                 ->descriptionIcon('heroicon-m-check-circle')
                 ->color('info'),
 
-            Stat::make('Konfirmasi Kesiapan', $readinessConfirmed)
-                ->description('User siap hari ini')
-                ->descriptionIcon('heroicon-m-hand-thumb-up')
-                ->color($readinessConfirmed > 0 ? 'success' : 'gray'),
-
-            Stat::make('Pendapatan Bulan Ini', 'Rp ' . number_format($monthlyRevenue, 0, ',', '.'))
-                ->description($completedThisMonth . ' booking selesai')
+            Stat::make('Pendapatan Bulan Ini', 'Rp '.number_format($monthlyRevenue, 0, ',', '.'))
+                ->description($completedThisMonth.' booking selesai')
                 ->descriptionIcon('heroicon-m-banknotes')
                 ->color('success'),
         ];
