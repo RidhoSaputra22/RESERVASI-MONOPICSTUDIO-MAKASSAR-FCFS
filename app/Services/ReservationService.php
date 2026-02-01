@@ -480,6 +480,7 @@ class ReservationService
 
     /**
      * Algoritma FCFS → Menentukan fotografer & studio pertama yang tersedia
+     * Jika slot yang diminta tidak tersedia, booking akan dibatalkan dan user diberitahu
      */
     protected function processFCFS(Booking $booking)
     {
@@ -492,25 +493,29 @@ class ReservationService
             ? $booking->scheduled_at->copy()->setTimezone($tz)
             : null;
 
-        $assignment = $scheduledAt
-            ? $this->findAvailableAssignment($scheduledAt, $durationMinutes, $booking->id)
-            : null;
-
-        if (! $assignment) {
-            $assignment = $this->findNextAvailableAssignment(
-                startDate: Carbon::now($tz)->addDay()->startOfDay(),
-                durationMinutes: $durationMinutes,
-                excludeBookingId: $booking->id,
-                maxDays: 30,
-            );
-        }
-
-        if (! $assignment) {
+        // Jika user tidak memilih jadwal, gagalkan booking
+        if (! $scheduledAt) {
+            $booking->update(['status' => BookingStatus::Cancelled]);
             $booking->user?->notify(new GenericDatabaseNotification(
-                message: 'Pembayaran berhasil, namun saat ini semua jadwal penuh. Tim kami akan menghubungi Anda untuk penjadwalan ulang.',
-                kind: NotificationType::BookingConfirmed->value,
+                message: 'Booking gagal: Jadwal tidak dipilih. Silakan buat reservasi ulang dengan memilih jadwal yang tersedia.',
+                kind: NotificationType::Cancelled->value,
                 extra: ['booking_id' => $booking->id, 'code' => $booking->code],
             ));
+            return;
+        }
+
+        $assignment = $this->findAvailableAssignment($scheduledAt, $durationMinutes, $booking->id);
+
+        // Jika slot yang diminta tidak tersedia, batalkan booking dan beritahu user
+        if (! $assignment) {
+            $requestedFormatted = $scheduledAt->format('d-m-Y H:i');
+            $booking->update(['status' => BookingStatus::Cancelled]);
+            $booking->user?->notify(new GenericDatabaseNotification(
+                message: "Maaf, jadwal {$requestedFormatted} sudah tidak tersedia karena telah dipesan oleh pelanggan lain. Pembayaran Anda akan diproses untuk pengembalian dana. Silakan buat reservasi ulang dengan memilih jadwal lain yang tersedia.",
+                kind: NotificationType::Cancelled->value,
+                extra: ['booking_id' => $booking->id, 'code' => $booking->code, 'reason' => 'slot_not_available'],
+            ));
+            Log::warning("Booking {$booking->code} dibatalkan: slot {$requestedFormatted} tidak tersedia (race condition)");
             return;
         }
 
