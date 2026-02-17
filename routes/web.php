@@ -52,9 +52,9 @@ Route::get('/test-email', function () {
     $user = User::firstOrCreate(
         [
             'email' => 'saputra22022@gmail.com',
+            'hp' => '081344968521',
         ], [
             'name' => 'Saputra',
-            'hp' => '081344968521',
             'role' => UserRole::Customer,
             'password' => bcrypt('password'),
         ]);
