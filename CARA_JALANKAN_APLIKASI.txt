@@ -1,5 +1,6 @@
 1. Buka Terminal Baru dan jalankan `php artisan serve`
 2. Buka Terminal Baru lagi dan jalankan `npm run dev`
 3. Buka Terminal Baru lagi dan jalankan `php artisan queue:work`
+4. Buka Terminal Baru lagi dan jalankan `php artisan schedule:work`
 
 

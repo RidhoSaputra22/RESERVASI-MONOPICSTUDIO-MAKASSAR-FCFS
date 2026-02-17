@@ -1,17 +1,22 @@
 <?php
 
-use Livewire\Volt\Component;
 use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Password;
+use Livewire\Volt\Component;
 
-new class extends Component {
+new class extends Component
+{
     public string $name = '';
+
     public string $email = '';
+
     public string $hp = '';
+
     public string $password = '';
+
     public string $password_confirmation = '';
 
     public function mount(): void
@@ -26,7 +31,7 @@ new class extends Component {
         $data = $this->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'hp' => ['required', 'string', 'max:15'],
+            'hp' => ['required', 'string', 'max:15', 'unique:users,hp'],
             'password' => ['required', 'string', 'confirmed', Password::min(8)],
         ]);
 
