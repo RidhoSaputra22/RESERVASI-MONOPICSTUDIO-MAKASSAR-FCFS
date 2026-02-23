@@ -44,9 +44,9 @@ class StatsOverviewWidget extends BaseWidget
             ->count();
 
         // Booking dengan Konfirmasi Kesiapan
-        $readinessConfirmed = Booking::whereNotNull('readiness_confirmed_at')
-            ->whereDate('scheduled_at', $today)
-            ->count();
+        // $readinessConfirmed = Booking::whereNotNull('readiness_confirmed_at')
+        //     ->whereDate('scheduled_at', $today)
+        //     ->count();
 
         // Pendapatan Bulan Ini (dari booking completed)
         $monthlyRevenue = Booking::where('status', BookingStatus::Completed)

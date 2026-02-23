@@ -233,7 +233,8 @@ new class extends Component
                     </td>
                     <td class="py-3 pr-4">
                         @if ($booking->readiness_confirmed_at)
-                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                        <span
+                            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
                             ✓ Dikonfirmasi
                         </span>
                         <div class="text-xs text-gray-500 mt-1">
@@ -249,46 +250,44 @@ new class extends Component
                             $isWithin30Minutes = false;
                             $diffInMinutes = null;
                             if ($booking->scheduled_at) {
-                                $now = \Carbon\Carbon::now();
-                                $diffInMinutes = $now->diffInMinutes($booking->scheduled_at, false);
-                                // Jika dalam range 30-60 menit sebelum jadwal
-                                $isWithin30Minutes = $diffInMinutes >= 0 && $diffInMinutes <= 60;
-                            }
-                            @endphp
-
-                            @if ($booking->status === BookingStatus::Confirmed && optional($booking->scheduled_at)->isFuture())
+                            $now = \Carbon\Carbon::now();
+                            $diffInMinutes = $now->diffInMinutes($booking->scheduled_at, false);
+                            // Jika dalam range 30-60 menit sebelum jadwal
+                            $isWithin30Minutes = $diffInMinutes >= 0 && $diffInMinutes <= 60; } @endphp @if ($booking->
+                                status === BookingStatus::Confirmed && optional($booking->scheduled_at)->isFuture())
                                 @if ($isWithin30Minutes && !$booking->readiness_confirmed_at)
-                                    {{-- Tombol Konfirmasi Kesiapan --}}
-                                    <a href="{{ route('booking.confirm-readiness', ['bookingId' => $booking->id]) }}"
-                                        class="px-3 py-2 bg-green-600 rounded-sm text-white text-xs hover:bg-green-700">
-                                        ✓ Konfirmasi Kesiapan
-                                    </a>
+                                {{-- Tombol Konfirmasi Kesiapan --}}
+                                <a href="{{ route('booking.confirm-readiness', ['bookingId' => $booking->id]) }}"
+                                    class="px-3 py-2 bg-green-600 rounded-sm text-white text-xs hover:bg-green-700">
+                                    ✓ Konfirmasi Kesiapan
+                                </a>
                                 @elseif ($isWithin30Minutes && $booking->readiness_confirmed_at)
-                                    {{-- Sudah dikonfirmasi --}}
-                                    <span class="text-xs text-green-600">Siap ✓</span>
+                                {{-- Sudah dikonfirmasi --}}
+                                <span class="text-xs text-green-600">Siap ✓</span>
                                 @else
-                                    {{-- Tombol normal: Jadwal Ulang & Batalkan --}}
-                                    <button wire:click="openReschedule({{ (int) $booking->id }})"
-                                        class="px-3 py-2 bg-gray-900 rounded-sm text-white text-xs">
-                                        Jadwal Ulang
-                                    </button>
-                                    <button wire:click="cancelBooking({{ (int) $booking->id }})"
-                                        class="px-3 py-2 bg-red-600 rounded-sm text-white text-xs">
-                                        Batalkan
-                                    </button>
-                                @endif
-                            @elseif($booking->status === BookingStatus::Pending)
-                                <button wire:click="cancelBooking({{ (int) $booking->id }})"
+                                {{-- Tombol normal: Jadwal Ulang & Batalkan --}}
+                                <button wire:click="openReschedule({{ (int) $booking->id }})"
                                     class="px-3 py-2 bg-gray-900 rounded-sm text-white text-xs">
-                                    Konfirmasi
+                                    Jadwal Ulang
                                 </button>
                                 <button wire:click="cancelBooking({{ (int) $booking->id }})"
                                     class="px-3 py-2 bg-red-600 rounded-sm text-white text-xs">
                                     Batalkan
                                 </button>
-                            @else
+                                @endif
+                                @elseif($booking->status === BookingStatus::Pending)
+
+                                <button wire:click="cancelBooking({{ (int) $booking->id }})"
+                                    class="px-3 py-2 bg-red-600 rounded-sm text-white text-xs">
+                                    Batalkan
+                                </button>
+                                @elseif($booking->status === BookingStatus::Completed)
+                                <a class="cursor-pointer bg-green-700 px-3 py-2 rounded-sm text-white text-xs"
+                                    href="{{ route('guest.booking', ['slug' => $booking->package->slug]) }}">Beri
+                                    Ulasan</a>
+                                @else
                                 <span class="text-xs text-gray-500">-</span>
-                            @endif
+                                @endif
                         </div>
                     </td>
                 </tr>

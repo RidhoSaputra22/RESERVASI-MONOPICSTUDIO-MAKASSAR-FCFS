@@ -1,9 +1,10 @@
 <?php
 
+use Carbon\Carbon;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration
 {
@@ -19,21 +20,25 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        DB::table('sesi_fotos')->insert([
-            ['name' => '1', 'session_time' => '09:00:00', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => '2', 'session_time' => '10:00:00', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => '3', 'session_time' => '11:00:00', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => '4', 'session_time' => '13:00:00', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => '5', 'session_time' => '14:00:00', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => '6', 'session_time' => '15:00:00', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => '7', 'session_time' => '16:00:00', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => '8', 'session_time' => '17:00:00', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => '9', 'session_time' => '18:00:00', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => '10', 'session_time' => '18:20:00', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => '11', 'session_time' => '19:00:00', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => '12', 'session_time' => '20:00:00', 'created_at' => now(), 'updated_at' => now()],
+        $start = Carbon::createFromTime(9, 0, 0);   // 09:00
+        $end = Carbon::createFromTime(20, 0, 0);  // 20:00
 
-        ]);
+        $data = [];
+        $no = 1;
+
+        while ($start <= $end) {
+            $data[] = [
+                'name' => (string) $no,
+                'session_time' => $start->format('H:i:s'),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+
+            $start->addMinutes(30);
+            $no++;
+        }
+
+        DB::table('sesi_fotos')->insert($data);
     }
 
     /**

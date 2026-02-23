@@ -14,3 +14,10 @@ Schedule::command('bookings:send-reminders')
     ->everyFiveMinutes()
     ->withoutOverlapping()
     ->onOneServer();
+
+// Batalkan otomatis booking pending yang waktu jadwalnya sudah terlewati
+// Berjalan setiap menit agar pembatalan segera terjadi begitu waktu terlewati
+Schedule::command('bookings:cancel-expired')
+    ->everyMinute()
+    ->withoutOverlapping()
+    ->onOneServer();

@@ -1,15 +1,14 @@
 <?php
 
+use App\Enums\BookingStatus;
 use App\Models\Booking;
 use App\Models\Package;
 use App\Services\ReservationService;
-use App\Enums\BookingStatus;
 use Illuminate\Support\Str;
 use Livewire\Volt\Component;
 
 new class extends Component
 {
-
     public Package $package;
 
     public ?int $excludeBookingId = null;
@@ -20,8 +19,11 @@ new class extends Component
     ];
 
     public bool $isOpen = false;
+
     public string $step = 'calendar'; // calendar | time
+
     public ?string $selectedDate = null;
+
     public ?string $selectedTime = null;
 
     public function open(): void
@@ -70,13 +72,12 @@ new class extends Component
         $this->step = 'calendar';
     }
 
-
     public function with()
     {
         $events = Booking::query()
             ->with(['user', 'package'])
             ->whereNotNull('scheduled_at')
-            ->where('status', '!=', BookingStatus::Cancelled->value)
+            ->where('status', '!=', BookingStatus::Cancelled)
             ->get()
             ->map(function ($booking) {
                 $start = $booking->scheduled_at;
@@ -118,15 +119,16 @@ new class extends Component
         }
     })">
     <style>
-        .fc-day-disabled,
-        .fc-day-disabled * {
-            pointer-events: none;
-        }
+    .fc-day-disabled,
+    .fc-day-disabled * {
+        pointer-events: none;
+    }
 
-        .fc-day-disabled {
-            opacity: 0.45;
-            background: #f3f4f6; /* gray-100 */
-        }
+    .fc-day-disabled {
+        opacity: 0.45;
+        background: #f3f4f6;
+        /* gray-100 */
+    }
     </style>
     <!-- Trigger -->
     @if($selectedDate && $selectedTime && $isOpen === false)
@@ -253,7 +255,7 @@ new class extends Component
             <h1>Pilih Jam Untuk Hari {{ $selectedDate !== null ? date('d F Y', strtotime($selectedDate)) : 'xx-xx-xx' }}
             </h1>
         </div>
-        <div class="grid grid-cols-4 gap-3">
+        <div class="grid grid-cols-6 gap-3">
             @foreach ($availableSlotTime as $slot)
             <button wire:click="selectTime('{{ $slot['time'] }}')"
                 class="border rounded-lg px-4 py-2 {{ $selectedTime === $slot['time'] ? 'bg-primary text-white ' : '' }} {{ ! $slot['available'] ? 'bg-gray-200 text-gray-400 cursor-not-allowed!' : 'hover:bg-primary hover:text-white' }}"

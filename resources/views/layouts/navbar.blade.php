@@ -1,9 +1,10 @@
 <?php
 
-use Livewire\Volt\Component;
 use Livewire\Attributes\On;
+use Livewire\Volt\Component;
 
-new class extends Component {
+new class extends Component
+{
     #[On('booking-updated-nav')]
     public function refreshBookingHint(): void
     {
@@ -40,6 +41,8 @@ return request()->routeIs($patterns);
         </div>
     </div>
     <div class="flex-2 flex justify-center ">
+
+        @if(!auth('photographer')->check())
         <ul class="flex gap-10   ">
             <li>
                 <a href="{{ route('welcome') }}" class="block  hover:text-primary {{ $navActive('') }}">Beranda</a>
@@ -53,6 +56,7 @@ return request()->routeIs($patterns);
                     Kami</a>
             </li>
         </ul>
+        @endif
     </div>
 
     <div class="flex flex-1 justify-end ">
@@ -77,13 +81,13 @@ return request()->routeIs($patterns);
                     <div class="border-b border-gray-400">
                         <div class="flex gap-3 items-center mb-3  mx-4 my-3">
                             @php
-                                $navUser = auth()->user()?->fresh();
+                            $navUser = auth()->user()?->fresh();
                             @endphp
                             @if (!empty($navUser?->photo))
-                                <img src="{{ asset('storage/' . $navUser->photo) }}" alt="Foto Profil"
-                                    class="size-13 aspect-square object-cover rounded-full ">
+                            <img src="{{ asset('storage/' . $navUser->photo) }}" alt="Foto Profil"
+                                class="size-13 aspect-square object-cover rounded-full ">
                             @else
-                                <div class="size-13 aspect-square rounded-full border bg-gray-50"></div>
+                            <div class="size-13 aspect-square rounded-full border bg-gray-50"></div>
                             @endif
                             <div>
                                 <h1 class="text-lg/tight font-semibold">{{ $navUser?->name ?? '' }}</h1>
@@ -147,15 +151,20 @@ return request()->routeIs($patterns);
                 <div>
                     <div class="border-b border-gray-400">
                         <div class="flex gap-3 items-center mb-3 mx-4 my-3">
-                            <div class="size-13 aspect-square rounded-full border bg-gray-50 flex items-center justify-center">
-                                <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <div
+                                class="size-13 aspect-square rounded-full border bg-gray-50 flex items-center justify-center">
+                                <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
                             </div>
                             <div>
                                 <h1 class="text-lg/tight font-semibold">{{ auth('photographer')->user()->name }}</h1>
-                                <span class="text-sm/tight font-light text-gray-500">{{ auth('photographer')->user()->email }}</span>
+                                <span
+                                    class="text-sm/tight font-light text-gray-500">{{ auth('photographer')->user()->email }}</span>
                             </div>
                         </div>
                     </div>

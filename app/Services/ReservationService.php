@@ -2,28 +2,24 @@
 
 namespace App\Services;
 
-use App\Models\{
-    Booking,
-    Photographer,
-    SesiFoto,
-    Studio,
-    Package,
-    User,
-    Holiday
-};
 use App\Enums\BookingStatus;
 use App\Enums\NotificationType;
+use App\Jobs\SendWhatsAppBookingNotification;
+use App\Models\Booking;
+use App\Models\Holiday;
+use App\Models\Package;
+use App\Models\Photographer;
+use App\Models\SesiFoto;
+use App\Models\Studio;
+use App\Models\User;
 use App\Notifications\GenericDatabaseNotification;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Midtrans\Config as MidtransConfig;
 use Midtrans\Snap;
-use Carbon\Carbon;
-
-use App\Jobs\SendWhatsAppBookingNotification;
-use App\Services\WhatsAppServices;
-use Illuminate\Support\Facades\Log;
 
 class ReservationService
 {
@@ -100,10 +96,20 @@ class ReservationService
                 ];
             });
 
+        $now = Carbon::now($tz);
+
         return collect($slotTimes)
-            ->map(function (string $time) use ($date, $durationMinutes, $operationalStart, $operationalEnd, $takenIntervals, $totalPhotographers, $totalStudios, $tz) {
+            ->map(function (string $time) use ($date, $durationMinutes, $operationalStart, $operationalEnd, $takenIntervals, $totalPhotographers, $totalStudios, $tz, $now) {
                 $slotStart = Carbon::parse("$date $time", $tz);
                 $slotEnd = $slotStart->copy()->addMinutes($durationMinutes);
+
+                // Tandai slot yang sudah terlewat sebagai tidak tersedia (hanya untuk hari ini)
+                if ($date === $now->toDateString() && $slotStart->lte($now)) {
+                    return [
+                        'time' => $time,
+                        'available' => false,
+                    ];
+                }
 
                 if ($slotStart->lt($operationalStart) || $slotEnd->gt($operationalEnd)) {
                     return [
@@ -178,7 +184,7 @@ class ReservationService
             }
 
             $booking->user?->notify(new GenericDatabaseNotification(
-                message: 'Booking Anda berhasil dibatalkan.' . (is_string($reason) && $reason !== '' ? " Alasan: {$reason}." : ''),
+                message: 'Booking Anda berhasil dibatalkan.'.(is_string($reason) && $reason !== '' ? " Alasan: {$reason}." : ''),
                 kind: NotificationType::Cancelled->value,
                 extra: $extra,
             ));
@@ -351,8 +357,6 @@ class ReservationService
                 'status' => BookingStatus::Pending,
             ]);
 
-
-
             // Buat parameter pembayaran Midtrans
             $params = [
                 'transaction_details' => [
@@ -501,6 +505,7 @@ class ReservationService
                 kind: NotificationType::Cancelled->value,
                 extra: ['booking_id' => $booking->id, 'code' => $booking->code],
             ));
+
             return;
         }
 
@@ -516,6 +521,7 @@ class ReservationService
                 extra: ['booking_id' => $booking->id, 'code' => $booking->code, 'reason' => 'slot_not_available'],
             ));
             Log::warning("Booking {$booking->code} dibatalkan: slot {$requestedFormatted} tidak tersedia (race condition)");
+
             return;
         }
 
@@ -552,7 +558,7 @@ class ReservationService
 
         $resolvedEmail = $email;
         if (! is_string($resolvedEmail) || $resolvedEmail === '') {
-            $resolvedEmail = 'guest+' . $hpDigits . '@example.test';
+            $resolvedEmail = 'guest+'.$hpDigits.'@example.test';
         }
 
         $existing = User::query()
@@ -567,14 +573,14 @@ class ReservationService
         $uniqueEmail = $resolvedEmail;
         $counter = 2;
         while (User::query()->where('email', $uniqueEmail)->exists()) {
-            $uniqueEmail = 'guest+' . $hpDigits . '+' . $counter . '@example.test';
+            $uniqueEmail = 'guest+'.$hpDigits.'+'.$counter.'@example.test';
             $counter++;
         }
 
         $uniqueHp = $hp !== '' ? $hp : $hpDigits;
         $hpCounter = 2;
         while (User::query()->where('hp', $uniqueHp)->exists()) {
-            $uniqueHp = $hpDigits . '-' . $hpCounter;
+            $uniqueHp = $hpDigits.'-'.$hpCounter;
             $hpCounter++;
         }
 
@@ -608,7 +614,7 @@ class ReservationService
                     continue;
                 }
 
-                $scheduledAt = Carbon::parse($date->toDateString() . ' ' . $slot['time'], $tz);
+                $scheduledAt = Carbon::parse($date->toDateString().' '.$slot['time'], $tz);
                 $assignment = $this->findAvailableAssignment($scheduledAt, $durationMinutes, $excludeBookingId);
                 if ($assignment) {
                     return $assignment;

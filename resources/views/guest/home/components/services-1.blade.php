@@ -3,7 +3,8 @@
 use App\Models\Package;
 use Livewire\Volt\Component;
 
-new class extends Component {
+new class extends Component
+{
     //
     public bool $readyToLoad = false;
 
@@ -26,14 +27,13 @@ new class extends Component {
             'paketRecomended' => $paketRecomended,
         ];
     }
-
 }; ?>
 
 <div class=" px-12 py-24 space-y-10 " wire:init="loadInitialData">
 
     <div class="">
-        <h1 class="text-4xl/normal font-semibold">Paket Foto Wisuda</h1>
-        <p class="text-lg font-light">Cari paket foto wisuda disini</p>
+        <h1 class="text-4xl/normal font-semibold">Paket Foto </h1>
+        <p class="text-lg font-light">Cari paket foto disini</p>
     </div>
 
     @if (!$readyToLoad)

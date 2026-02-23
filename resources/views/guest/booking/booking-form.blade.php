@@ -25,6 +25,8 @@ new class extends Component
 
     public ?string $pendingBookingCode = null;
 
+    public ?string $cancelError = null;
+
     public function mount(): void
     {
         if (Auth::check()) {
@@ -48,6 +50,7 @@ new class extends Component
             'booking_date',
             'booking_time',
             'pendingBookingCode',
+            'cancelError',
         ]);
 
         $this->dispatch('reset-booking-calendar');
@@ -60,13 +63,15 @@ new class extends Component
     }
 
     #[On('payment-closed')]
-    public function handlePaymentClosed(): void
+    public function handlePaymentClosed(?string $bookingCode = null): void
     {
-        if (! $this->pendingBookingCode) {
+        $code = $bookingCode ?: $this->pendingBookingCode;
+
+        if (! $code) {
             return;
         }
 
-        $booking = Booking::where('code', $this->pendingBookingCode)->first();
+        $booking = Booking::where('code', $code)->first();
 
         if ($booking && $booking->status === BookingStatus::Pending) {
             $booking->update(['status' => BookingStatus::Cancelled]);
@@ -77,16 +82,17 @@ new class extends Component
                 kind: \App\Enums\NotificationType::Cancelled->value,
                 extra: ['booking_id' => $booking->id, 'code' => $booking->code],
             ));
-
-            session()->flash('error', 'Pembayaran dibatalkan. Reservasi Anda telah dibatalkan.');
         }
 
+        $this->cancelError = 'Pembayaran dibatalkan. Reservasi Anda telah dibatalkan.';
         $this->pendingBookingCode = null;
         $this->dispatch('booking-cancelled');
     }
 
     public function submitForm(): void
     {
+        $this->cancelError = null;
+
         if (! Auth::check()) {
             session()->flash('error', 'Silakan login terlebih dahulu untuk melakukan reservasi.');
             $this->redirectRoute('login');
@@ -128,7 +134,7 @@ new class extends Component
 
             if (is_array($result) && isset($result['snap_token'])) {
                 $this->pendingBookingCode = $result['booking']->code ?? null;
-                $this->dispatch('open-midtrans-snap', snapToken: $result['snap_token']);
+                $this->dispatch('open-midtrans-snap', snapToken: $result['snap_token'], bookingCode: $this->pendingBookingCode);
             }
 
             $this->dispatch('booking-created');
@@ -157,9 +163,9 @@ new class extends Component
         </div>
         @endif
 
-        @if (session()->has('error'))
+        @if (session()->has('error') || $cancelError)
         <div class="p-3 border border-red-200 bg-red-50 rounded-md text-sm font-light text-red-700">
-            {{ session('error') }}
+            {{ session('error') ?: $cancelError }}
         </div>
         @endif
 
@@ -274,6 +280,7 @@ $snapBaseUrl = $isProduction
     document.addEventListener('open-midtrans-snap', function(event) {
         var detail = event && event.detail ? event.detail : {};
         var snapToken = detail.snapToken;
+        var bookingCode = detail.bookingCode || null;
         if (!snapToken) return;
 
         waitForSnap(5000)
@@ -288,12 +295,17 @@ $snapBaseUrl = $isProduction
                         window.location.reload();
                     },
                     onError: function() {
-                        Livewire.dispatch('payment-closed');
+                        Livewire.dispatch('payment-closed', {
+                            bookingCode: bookingCode
+                        });
                         alert(
-                        'Pembayaran gagal diproses. Reservasi Anda telah dibatalkan.');
+                            'Pembayaran gagal diproses. Reservasi Anda telah dibatalkan.'
+                        );
                     },
                     onClose: function() {
-                        Livewire.dispatch('payment-closed');
+                        Livewire.dispatch('payment-closed', {
+                            bookingCode: bookingCode
+                        });
                     }
                 });
             })

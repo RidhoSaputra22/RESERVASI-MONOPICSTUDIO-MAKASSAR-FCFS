@@ -18,8 +18,7 @@ class StudiosTable
                     ->searchable(),
                 TextColumn::make('location')
                     ->searchable(),
-                TextColumn::make('capacity')
-                    ->sortable(),
+
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

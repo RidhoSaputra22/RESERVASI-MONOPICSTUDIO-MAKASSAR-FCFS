@@ -32,8 +32,8 @@ class PackageFactory extends Factory
             'packages/gallery-5.jpg',
         ];
 
-        $name = $sessionType . ' Session';
-        $slug = Str::slug($name) . '-' . fake()->unique()->numberBetween(1, 99999);
+        $name = $sessionType.' Session';
+        $slug = Str::slug($name).'-'.fake()->unique()->numberBetween(1, 99999);
 
         return [
             'category_id' => Category::factory(),
@@ -48,7 +48,7 @@ class PackageFactory extends Factory
             // 'photo' => fake()->randomElement(array_merge([null], $photo)),
             'photo' => fake()->randomElement($photo),
             'price' => 200000,
-            'duration_minutes' => fake()->randomElement([30, 60, 90, 120]),
+            'duration_minutes' => 30,
         ];
     }
 }

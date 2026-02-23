@@ -15,9 +15,7 @@ class StudioForm
                     ->required(),
                 TextInput::make('location')
                     ->nullable(),
-                TextInput::make('capacity')
-                    ->numeric()
-                    ->required(),
+
             ]);
     }
 }

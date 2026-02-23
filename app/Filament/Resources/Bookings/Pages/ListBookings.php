@@ -15,7 +15,7 @@ class ListBookings extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            // CreateAction::make(),
             Action::make('Laporan')
                 ->url(route('laporan.booking', ['print' => '1']))
                 ->openUrlInNewTab()
