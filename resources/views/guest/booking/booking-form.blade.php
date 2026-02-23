@@ -27,6 +27,7 @@ new class extends Component
 
     public ?string $cancelError = null;
 
+    // Jika user sudah login, isi data diri secara otomatis
     public function mount(): void
     {
         if (Auth::check()) {
@@ -37,6 +38,7 @@ new class extends Component
         }
     }
 
+    // Terima event dari komponen kalender untuk mengisi tanggal dan waktu reservasi
     #[On('date-time-selected')]
     public function setDateTime($data)
     {
@@ -44,6 +46,7 @@ new class extends Component
         $this->booking_time = $data['time'];
     }
 
+    // Terima event untuk mereset data form ketika user membatalkan pembayaran atau setelah booking berhasil
     public function clearData(): void
     {
         $this->reset([
@@ -89,10 +92,12 @@ new class extends Component
         $this->dispatch('booking-cancelled');
     }
 
+    // Validasi dan simpan data reservasi ke database
     public function submitForm(): void
     {
         $this->cancelError = null;
 
+        // Pastikan user sudah login sebelum bisa submit form reservasi
         if (! Auth::check()) {
             session()->flash('error', 'Silakan login terlebih dahulu untuk melakukan reservasi.');
             $this->redirectRoute('login');
@@ -100,6 +105,7 @@ new class extends Component
             return;
         }
 
+        // Validasi input
         $this->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
@@ -116,6 +122,7 @@ new class extends Component
         ]);
 
         try {
+            // Gabungkan tanggal dan waktu menjadi satu field datetime untuk disimpan di database
             $user = Auth::user();
 
             $tz = 'Asia/Makassar';
@@ -262,6 +269,7 @@ $snapBaseUrl = $isProduction
 
 <script>
 (function() {
+    // Fungsi untuk menunggu hingga Midtrans Snap tersedia sebelum memanggil snap.pay()
     function waitForSnap(maxMs) {
         return new Promise(function(resolve, reject) {
             var start = Date.now();
@@ -277,6 +285,7 @@ $snapBaseUrl = $isProduction
         });
     }
 
+    // Fungsi handle midtrans
     document.addEventListener('open-midtrans-snap', function(event) {
         var detail = event && event.detail ? event.detail : {};
         var snapToken = detail.snapToken;

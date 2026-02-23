@@ -123,6 +123,7 @@ new class extends Component {
 }; ?>
 
 
+
 <div class="p-6">
     <div class="mb-6">
         <h2 class="text-xl font-semibold">Profil Saya</h2>

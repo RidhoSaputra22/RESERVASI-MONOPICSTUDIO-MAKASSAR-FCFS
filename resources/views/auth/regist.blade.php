@@ -28,6 +28,7 @@ new class extends Component
 
     public function register()
     {
+        // Validasi input
         $data = $this->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
@@ -35,6 +36,7 @@ new class extends Component
             'password' => ['required', 'string', 'confirmed', Password::min(8)],
         ]);
 
+        // Buat user baru
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
@@ -43,8 +45,10 @@ new class extends Component
             'role' => UserRole::Customer,
         ]);
 
+        // Kirim event Registered untuk mengirim email verifikasi
         event(new Registered($user));
 
+        // Login user secara otomatis setelah registrasi
         Auth::login($user);
         request()->session()->regenerate();
 

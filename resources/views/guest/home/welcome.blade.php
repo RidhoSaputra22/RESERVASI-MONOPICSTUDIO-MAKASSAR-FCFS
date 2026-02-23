@@ -3,18 +3,20 @@
 use App\Models\Package;
 use Livewire\Volt\Component;
 
-new class extends Component {
+new class extends Component
+{
     //
 
     public function with()
     {
+        // Ambil 3 paket terbaru untuk ditampilkan di halaman utama
         $paket = Package::take(3)->get();
+
         return [
             'paket' => $paket,
 
         ];
     }
-
 };
 
 ?>

@@ -23,6 +23,7 @@ new class extends Component
 
     public function login()
     {
+        // Validasi input
         $credentials = $this->validate([
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
@@ -31,6 +32,7 @@ new class extends Component
 
         $throttleKey = Str::transliterate(Str::lower($credentials['email']).'|'.request()->ip());
 
+        // Cek apakah sudah terlalu banyak percobaan login
         if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
             $seconds = RateLimiter::availableIn($throttleKey);
 
@@ -39,6 +41,7 @@ new class extends Component
             ]);
         }
 
+        // Coba login dengan guard default (user)
         if (Auth::attempt(['email' => $credentials['email'], 'password' => $credentials['password']], $credentials['remember'])) {
 
             RateLimiter::clear($throttleKey);
@@ -48,6 +51,7 @@ new class extends Component
 
         }
 
+        // Coba login dengan guard photographer
         if (Auth::guard('photographer')->attempt(['email' => $credentials['email'], 'password' => $credentials['password']], $credentials['remember'])) {
             RateLimiter::clear($throttleKey);
             request()->session()->regenerate();
@@ -55,7 +59,9 @@ new class extends Component
             return redirect()->route('photographer.dashboard');
         }
 
+        // Jika login gagal, catat percobaan login
         RateLimiter::hit($throttleKey, 60);
+
 
         throw ValidationException::withMessages([
             'email' => 'Email atau password salah.',

@@ -22,6 +22,7 @@ new class extends Component
 
     public ?string $reschedule_time = null;
 
+    // Listener untuk menerima data tanggal dan waktu baru dari komponen kalender saat menjadwal ulang
     #[\Livewire\Attributes\On('date-time-selected')]
     public function setRescheduleDateTime($data): void
     {
@@ -29,6 +30,7 @@ new class extends Component
         $this->reschedule_time = is_array($data) ? ($data['time'] ?? null) : null;
     }
 
+    // Fungsi untuk membuka modal jadwal ulang dengan booking yang dipilih
     public function openReschedule(int $bookingId): void
     {
         $this->rescheduleBookingId = $bookingId;
