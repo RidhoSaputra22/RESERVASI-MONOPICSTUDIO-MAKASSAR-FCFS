@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Bookings\Pages;
 
+use App\Enums\BookingStatus;
 use App\Enums\NotificationType;
 use App\Filament\Resources\Bookings\BookingResource;
 use App\Notifications\GenericDatabaseNotification;
@@ -16,7 +17,21 @@ class EditBooking extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            DeleteAction::make(),
+            DeleteAction::make()
+                ->before(function ($record) {
+                    $record->loadMissing('user');
+
+                    if (
+                        $record->user &&
+                        ! in_array($record->status, [BookingStatus::Cancelled, BookingStatus::Completed], true)
+                    ) {
+                        $record->user->notify(new GenericDatabaseNotification(
+                            message: "Booking Anda dengan kode *{$record->code}* telah dibatalkan oleh admin.",
+                            kind: 'booking_cancelled_by_admin',
+                            extra: ['booking_id' => $record->id, 'code' => $record->code],
+                        ));
+                    }
+                }),
         ];
     }
 
