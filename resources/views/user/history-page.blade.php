@@ -142,6 +142,7 @@ new class extends Component
             ->when($this->selectedBookingStatus && $this->selectedBookingStatus !== 'all', function ($query) {
                 $query->where('status', $this->selectedBookingStatus);
             })
+            ->orderBy('scheduled_at', 'asc')
             ->latest()
             ->paginate(10);
 
